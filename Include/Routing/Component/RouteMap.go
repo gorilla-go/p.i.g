@@ -1,6 +1,7 @@
 package Component
 
 import (
+	"php-in-go/Include/Contracts/Http/Controller"
 	"strings"
 )
 
@@ -12,7 +13,7 @@ type RouteMap struct {
 }
 
 // NewRouteMap create new router map.
-func NewRouteMap(path string, pkg interface{}, methodName string) *RouteMap {
+func NewRouteMap(path string, pkg Controller.IController, methodName string) *RouteMap {
 	return &RouteMap{
 		uriFormat:     path,
 		controllerPkg: pkg,

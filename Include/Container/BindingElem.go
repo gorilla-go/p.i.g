@@ -1,6 +1,9 @@
 package Container
 
-import "reflect"
+import (
+	"errors"
+	"reflect"
+)
 
 type BindingImpl struct {
 	concrete reflect.Value
@@ -9,8 +12,17 @@ type BindingImpl struct {
 }
 
 func NewBindingImpl(concrete interface{}) *BindingImpl {
+	refValue := reflect.ValueOf(concrete)
+
+	// check type.
+	refType := refValue.Type().Kind()
+	if refType != reflect.Ptr {
+		panic(errors.New("UnSupport non-pointer implement type: " + refType.String()))
+	}
+
+	// combine struct.
 	return &BindingImpl{
-		concrete: reflect.ValueOf(concrete),
+		concrete: refValue,
 		shared:   false,
 		alias:    "",
 	}

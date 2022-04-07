@@ -26,7 +26,7 @@ func (s *HttpServer) Initializer(config Config.HttpServer) {
 
 	// set http kernel
 	s.container.AddBinding((*Http.IApp)(nil), Container2.NewBindingImpl(&Bootstrap.App{}))
-	s.app = s.container.GetInstanceByAbstract((*Http.IApp)(nil)).(Http.IApp)
+	s.app = s.container.GetSingletonByAbstract((*Http.IApp)(nil)).(Http.IApp)
 }
 
 func (s *HttpServer) GetContainer() Container.IContainer {
@@ -46,7 +46,7 @@ func (s *HttpServer) Start() {
 	// start server.
 	http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
 		go func() {
-			s.app.Handle(Http2.BuildRequest(request))
+			s.app.Handle(Http2.BuildRequest(request), Http2.BuildResponse(writer))
 		}()
 	})
 

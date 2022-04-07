@@ -1,25 +1,25 @@
 package Container
 
 import (
-	"fmt"
+	"errors"
 	"reflect"
 )
 
 type Container struct {
-	singleton      map[string]interface{}
-	bindings       map[string]*BindingImpl
-	contextual     map[string]map[string]interface{}
-	methodBindings map[string]func(params ...interface{})
-	singletonAlias map[string]string
+	singleton              map[string]interface{}
+	bindings               map[string]*BindingImpl
+	contextual             map[string]map[string]interface{}
+	singletonAlias         map[string]string
+	singletonAliasAbstract map[string]interface{}
 }
 
 func NewContainer() *Container {
 	return &Container{
-		singleton:      make(map[string]interface{}),
-		bindings:       make(map[string]*BindingImpl),
-		contextual:     make(map[string]map[string]interface{}),
-		methodBindings: make(map[string]func(params ...interface{})),
-		singletonAlias: make(map[string]string),
+		singleton:              make(map[string]interface{}),
+		bindings:               make(map[string]*BindingImpl),
+		contextual:             make(map[string]map[string]interface{}),
+		singletonAlias:         make(map[string]string),
+		singletonAliasAbstract: make(map[string]interface{}),
 	}
 }
 
@@ -38,7 +38,13 @@ func (c *Container) AddBinding(abstract interface{}, elem *BindingImpl) {
 	}
 }
 
+// Singleton Register singleton.
 func (c *Container) Singleton(instance interface{}, alias string) {
+	// un-support non-pointer type.
+	typeInstance := reflect.TypeOf(instance).Kind()
+	if typeInstance != reflect.Ptr {
+		panic(errors.New("Non-pointer type: " + typeInstance.String()))
+	}
 	mapName := GetPackageClassName(instance)
 	c.singleton[mapName] = instance
 	if alias != "" {
@@ -46,7 +52,16 @@ func (c *Container) Singleton(instance interface{}, alias string) {
 	}
 }
 
-func (c *Container) GetInstanceByAlias(name string) interface{} {
+// GetSingleton Get singleton.
+func (c *Container) GetSingleton(instance interface{}) interface{} {
+	mapName := GetPackageClassName(instance)
+	if v, exist := c.singleton[mapName]; exist {
+		return v
+	}
+	return nil
+}
+
+func (c *Container) GetSingletonByAlias(name string) interface{} {
 	aliasName, ok := c.singletonAlias[name]
 	if !ok {
 		panic("none value")
@@ -59,9 +74,8 @@ func (c *Container) GetInstanceByAlias(name string) interface{} {
 	return inject
 }
 
-func (c *Container) GetInstanceByAbstract(abstract interface{}) interface{} {
-	abstractName := GetPackageClassName(abstract)
-	concrete := c.getConcrete(abstractName)
+func (c *Container) GetSingletonByAbstract(abstract interface{}) interface{} {
+	concrete := c.getConcrete(GetPackageClassName(abstract))
 	if concrete == nil {
 		return nil
 	}
@@ -74,7 +88,7 @@ func (c *Container) getConcrete(abstract string) *reflect.Value {
 
 			// search with alias
 			if abstractElem.GetAlias() != "" {
-				inject := reflect.ValueOf(c.GetInstanceByAlias(abstractElem.GetAlias()))
+				inject := reflect.ValueOf(c.GetSingletonByAlias(abstractElem.GetAlias()))
 				return &inject
 			}
 
@@ -93,75 +107,108 @@ func (c *Container) getConcrete(abstract string) *reflect.Value {
 	return nil
 }
 
-func (c *Container) Resolve(abstract interface{}, params map[string]interface{}, raiseEvents bool) interface{} {
-	return c.resolveAbstract(
-		reflect.TypeOf(abstract).Elem(),
-		params,
-		raiseEvents,
-	)
-}
+func (c *Container) Resolve(abstract interface{}, params map[string]interface{}, new bool) (r interface{}) {
+	c.fireBeforeResolvingCallbacks(&abstract, &params)
 
-func (c *Container) resolveAbstract(abstract reflect.Type, params map[string]interface{}, raiseEvents bool) interface{} {
-	if raiseEvents == true {
-		c.fireBeforeResolvingCallbacks(&abstract, &params)
+	// get reflection value.
+	refType := reflect.TypeOf(abstract)
+	originRefType := refType
+
+	// is ptr
+	if refType.Kind() == reflect.Ptr {
+		refType = refType.Elem()
 	}
 
+	switch refType.Kind() {
+
+	// interface ?
+	case reflect.Interface:
+		r = c.resolveAbstract(
+			refType,
+			params,
+			new,
+		)
+		break
+	// struct
+	case reflect.Struct:
+		r = c.build(abstract, params, new)
+		break
+	default:
+		r = reflect.New(originRefType).Elem()
+		break
+	}
+
+	// after resolving callback
+	c.fireAfterResolvingCallbacks(&r, abstract)
+
+	return
+}
+
+func (c *Container) resolveAbstract(abstract reflect.Type, params map[string]interface{}, new bool) interface{} {
 	// get strand package name.
 	packagePath := GetPackageClassNameByRef(abstract)
 
 	// has cache ?
-	if object, exist := c.singleton[packagePath]; exist == true && len(params) == 0 {
-		return object
+	if v, exist := c.singletonAliasAbstract[packagePath]; exist && new == false {
+		return v
 	}
 
 	// get interface to concrete.
 	concrete := c.getConcrete(packagePath)
 
 	// invalid interface ?
-	if concrete == nil || reflect.TypeOf(*concrete).Kind() != reflect.Struct {
-		panic("invalid abstract")
+	if concrete == nil {
+		panic(errors.New("Unregistered interface mapping: " + abstract.String()))
 	}
 
-	// ptr? to elem.
-	if abstract.Kind() == reflect.Ptr {
-		abstract = abstract.Elem()
+	// build object
+	object := c.build((*concrete).Interface(), params, new)
+
+	// cache build result for next.
+	c.singletonAliasAbstract[packagePath] = object
+
+	// shared ?
+	if c.bindings[packagePath].shared == true {
+		c.Singleton(object, c.bindings[packagePath].alias)
 	}
 
-	// build it
-	object := c.Build((*concrete).Interface(), params)
-
-	// cache it
-	if abstractElem, ok := c.bindings[packagePath]; ok && abstractElem.GetShared() == true && len(params) == 0 {
-		c.singleton[packagePath] = object
-	}
-
-	if raiseEvents == true {
-		c.fireAfterResolvingCallbacks(&abstract, &object)
-	}
 	return object
 }
 
-// Build class resolve params inject.
-func (c *Container) Build(object interface{}, params map[string]interface{}) interface{} {
+// build  resolve params inject.
+func (c *Container) build(object interface{}, params map[string]interface{}, new bool) interface{} {
+	// search from cache
+	cacheValue := c.GetSingleton(object)
+	if cacheValue != nil || new == false {
+		return cacheValue
+	}
+
 	// get scene class name.
 	packageName := GetPackageClassName(object)
 
+	// get reflection type for next.
+	reflectionType := reflect.TypeOf(object)
 	// get reflect type and value
-	refValue := reflect.ValueOf(object)
-	refType := reflect.TypeOf(object)
+	var refValue reflect.Value
 
-	// check reflect type, is ptr? to elem.
-	if refType.Kind() == reflect.Ptr {
-		refType = refType.Elem()
-
-		//// re-build memory
-		//refValue = reflect.New(refType)
+	isPtr := false
+	if reflectionType.Kind() == reflect.Ptr {
+		isPtr = true
+		reflectionType = reflectionType.Elem()
 	}
-	fmt.Println(refType.NumField())
-	for i := 0; i < refType.NumField(); i++ {
+
+	// re-construct struct for memory
+	refValue = reflect.New(reflectionType).Elem()
+
+	for i := 0; i < refValue.NumField(); i++ {
 		// get current field struct map.
-		FieldStruct := refType.Field(i)
-		pkgClassName := GetPackageClassNameByRef(FieldStruct.Type)
+		fieldStruct := refValue.Type().Field(i)
+
+		// is exported?
+		if fieldStruct.IsExported() == false {
+			continue
+		}
+		fieldName := GetPackageClassNameByRef(fieldStruct.Type)
 
 		// check field, ptr? to elem.
 		var fieldValue reflect.Value
@@ -173,20 +220,20 @@ func (c *Container) Build(object interface{}, params map[string]interface{}) int
 
 		// solve from params
 		if len(params) > 0 {
-			if inject, ok := params[FieldStruct.Name]; ok {
+			if inject, ok := params[fieldStruct.Name]; ok {
 				fieldValue.Set(reflect.ValueOf(inject))
 				continue
 			}
 		}
 
 		// contextual inject.
-		if cacheInjectObj, exist := c.contextual[packageName][pkgClassName]; exist {
+		if cacheInjectObj, exist := c.contextual[packageName][fieldName]; exist {
 			fieldValue.Set(reflect.ValueOf(cacheInjectObj))
 			continue
 		}
 
 		// get type from current fieldStruct
-		fieldType := FieldStruct.Type
+		fieldType := fieldStruct.Type
 
 		// is ptr? to elem.
 		if fieldType.Kind() == reflect.Ptr {
@@ -196,50 +243,45 @@ func (c *Container) Build(object interface{}, params map[string]interface{}) int
 		// solve from container
 		switch fieldType.Kind() {
 		case reflect.Interface:
-			// search interface binding from storage. private?
-			if bindingItem, exist := c.bindings[pkgClassName]; !exist || bindingItem.GetShared() != true {
-				continue
-			}
+			if fieldValue.CanSet() == true {
+				// search interface binding from storage.
+				cacheImplValue := c.getConcrete(GetPackageClassNameByRef(fieldType))
+				if cacheImplValue != nil {
+					fieldValue.Set(*cacheImplValue)
+					continue
+				}
 
-			// resolve struct
-			resolveRes := reflect.ValueOf(
-				c.resolveAbstract(
-					fieldType,
-					nil,
-					false,
-				),
-			)
-
-			if resolveRes.Type().Kind() == reflect.Ptr {
-				resolveRes = reflect.Indirect(resolveRes)
+				// set field value
+				fieldValue.Set(reflect.ValueOf(
+					c.resolveAbstract(
+						fieldType,
+						nil,
+						new,
+					),
+				))
 			}
-			fmt.Println("----")
-			fmt.Println(resolveRes)
-			fmt.Println(fieldValue.CanSet())
-			// set field value
-			fieldValue.Set(resolveRes)
 			break
 		case reflect.Struct:
-			// search from cache
-			if cacheType, ok := c.singleton[pkgClassName]; ok {
-				cacheRef := reflect.ValueOf(cacheType)
-				if cacheRef.Kind() == fieldValue.Kind() {
-					fieldValue.Set(cacheRef)
-				}
-				break
-			}
-
-			// build in-time
-			fieldValue.Set(
-				reflect.ValueOf(
-					c.Build(
-						fieldValue.Interface(),
-						nil,
+			if fieldValue.CanSet() == true {
+				// build in-time
+				fieldValue.Set(
+					reflect.ValueOf(
+						c.build(
+							fieldValue.Interface(),
+							nil,
+							new,
+						),
 					),
-				),
-			)
+				)
+			}
 		}
 	}
 
+	if isPtr {
+		return refValue.Addr().Interface()
+	}
+
+	// cache
+	c.Singleton(refValue.Interface(), "")
 	return refValue.Interface()
 }

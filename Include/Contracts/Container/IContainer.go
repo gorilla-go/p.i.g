@@ -7,9 +7,9 @@ import (
 type IContainer interface {
 	AddBinding(abstract interface{}, elem *Container2.BindingImpl)
 	Singleton(instance interface{}, alias string)
-	Resolve(abstract interface{}, params map[string]interface{}, raiseEvents bool) interface{}
-	Build(object interface{}, params map[string]interface{}) interface{}
+	Resolve(abstract interface{}, params map[string]interface{}, new bool) interface{}
 	AddContextual(contextualElems ...*Container2.ContextualElem)
-	GetInstanceByAlias(name string) interface{}
-	GetInstanceByAbstract(abstract interface{}) interface{}
+	GetSingleton(instance interface{}) interface{}
+	GetSingletonByAlias(name string) interface{}
+	GetSingletonByAbstract(abstract interface{}) interface{}
 }

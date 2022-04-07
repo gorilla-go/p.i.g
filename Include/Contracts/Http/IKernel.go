@@ -6,6 +6,6 @@ import (
 
 type IKernel interface {
 	Bootstrap(container IApp)
-	Handle(request *Http.Request) *Http.Response
-	RequestInstance()
+	Handle(request *Http.Request, response *Http.Response) *Http.Response
+	ServicesRegister()
 }

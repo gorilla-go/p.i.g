@@ -29,22 +29,22 @@ func (a *App) Initializer(server Server2.IServer) {
 
 	// set http kernel route
 	a.container.AddBinding((*Routing.IRouter)(nil), Container2.NewBindingImpl(&Routing2.Router{}))
-	a.router = a.container.GetInstanceByAbstract((*Routing.IRouter)(nil)).(Routing.IRouter)
+	a.router = a.container.GetSingletonByAbstract((*Routing.IRouter)(nil)).(Routing.IRouter)
 	a.router.Initializer(Routes.Route(), Config.Route())
 
 	// set http exception handler
 	a.container.AddBinding((*Debug.IExceptionHandler)(nil), Container2.NewBindingImpl(&Exception.Handler{}))
-	a.exceptionHandler = a.container.GetInstanceByAbstract((*Debug.IExceptionHandler)(nil)).(Debug.IExceptionHandler)
+	a.exceptionHandler = a.container.GetSingletonByAbstract((*Debug.IExceptionHandler)(nil)).(Debug.IExceptionHandler)
 
 	// set http kernel
 	a.container.AddBinding((*Http2.IKernel)(nil), Container2.NewBindingImpl(&Http3.Kernel{}))
-	a.kernel = a.container.GetInstanceByAbstract((*Http2.IKernel)(nil)).(Http2.IKernel)
+	a.kernel = a.container.GetSingletonByAbstract((*Http2.IKernel)(nil)).(Http2.IKernel)
 
 	a.kernel.Bootstrap(a)
 }
 
-func (a *App) Handle(request *Http.Request) *Http.Response {
-	return a.kernel.Handle(request)
+func (a *App) Handle(request *Http.Request, response *Http.Response) *Http.Response {
+	return a.kernel.Handle(request, response)
 }
 
 func (a *App) GetContainer() Container.IContainer {

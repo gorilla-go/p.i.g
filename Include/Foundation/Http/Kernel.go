@@ -1,16 +1,13 @@
 package Http
 
 import (
-	"context"
-	"errors"
-	"fmt"
-	"log"
 	Container2 "php-in-go/Include/Container"
-	"php-in-go/Include/Contracts/Container"
 	Http2 "php-in-go/Include/Contracts/Http"
+	"php-in-go/Include/Contracts/Http/Controller"
+	Controller2 "php-in-go/Include/Foundation/Http/Controller"
 	"php-in-go/Include/Http"
+	"php-in-go/Include/Routing"
 	"reflect"
-	"time"
 )
 
 type Kernel struct {
@@ -22,11 +19,11 @@ func (k *Kernel) Bootstrap(app Http2.IApp) {
 	k.app = app
 }
 
-// RequestInstance init request instance bean.
-func (k *Kernel) RequestInstance() {}
+// ServicesRegister init request instance bean.
+func (k *Kernel) ServicesRegister() {}
 
-// GetRequestInstance get current request container.
-func (k *Kernel) GetRequestInstance() *Container2.Container {
+// GetRequestContainer get current request container.
+func (k *Kernel) GetRequestContainer() *Container2.Container {
 	return k.requestContainer
 }
 
@@ -36,7 +33,8 @@ func (k *Kernel) GetApp() Http2.IApp {
 }
 
 // Handle each request kernel.
-func (k *Kernel) Handle(request *Http.Request) (response *Http.Response) {
+func (k *Kernel) Handle(request *Http.Request, response *Http.Response) *Http.Response {
+	// register error handle.
 	//defer func() {
 	//	err := recover()
 	//	if err != nil {
@@ -45,6 +43,7 @@ func (k *Kernel) Handle(request *Http.Request) (response *Http.Response) {
 	//		fmt.Println(string(v))
 	//	}
 	//}()
+	// init response
 
 	// init request container
 	k.requestContainer = Container2.NewContainer()
@@ -53,57 +52,68 @@ func (k *Kernel) Handle(request *Http.Request) (response *Http.Response) {
 	k.containerFoundation(request, response)
 
 	// init context.
-	k.RequestInstance()
+	k.ServicesRegister()
 
 	// init background.
 	actionTarget := k.app.GetRouter().Resolve(request)
 
+	// call method.
+	return k.dispatch(actionTarget, request, response)
+}
+
+// dispatch call correct controller method.
+func (k *Kernel) dispatch(target *Routing.Target, request *Http.Request, response *Http.Response) *Http.Response {
 	// page no found
-	if actionTarget == nil {
-		fmt.Println("404. route not found.")
+	if target == nil {
+		baseController := &Controller2.BaseController{
+			Request:  request,
+			Response: response,
+		}
+		return baseController.NoFound()
 	}
 
 	// resolve controller params.
-	targetController := k.GetRequestInstance().Build(actionTarget.Controller, nil)
-	fmt.Println(targetController)
-	// controller check.
-	if reflect.TypeOf(targetController).Implements(reflect.TypeOf((*Container.IContainer)(nil))) == false {
-		fmt.Println(11)
-		log.Fatalln("Invalid Controller.")
-	}
+	targetController := k.GetRequestContainer().Resolve(target.Controller, nil, true).(Controller.IController)
 
 	// resolve target method
-	_ = reflect.ValueOf(targetController).MethodByName(actionTarget.Method)
-	return
-}
+	targetMethod := reflect.ValueOf(targetController).MethodByName(target.Method)
 
-type test struct {
-	A int8
-}
+	// no found method ? to NoFound method in base controller.
+	if targetMethod.IsValid() == false {
+		noFoundMethod := reflect.ValueOf(targetController).MethodByName("NoFound")
+		responseArr := noFoundMethod.Call([]reflect.Value{})
+		return responseArr[0].Interface().(*Http.Response)
+	}
 
-func (t *test) Deadline() (deadline time.Time, ok bool) {
-	return time.Time{}, false
-}
+	// resolve func params.
+	var paramsArr []reflect.Value
+	paramsNum := targetMethod.Type().NumIn()
 
-func (t *test) Done() <-chan struct{} {
-	return make(chan struct{})
-}
-func (t *test) Err() error {
-	return errors.New("")
-}
-func (t *test) Value(key interface{}) interface{} {
-	return ""
+	for i := 0; i < paramsNum; i++ {
+		// get param item type.
+		paramItemType := targetMethod.Type().In(i)
+
+		// is interface?
+		if paramItemType.Kind() == reflect.Interface {
+			paramItemType = reflect.PtrTo(paramItemType)
+		}
+
+		// append to params arr.
+		paramsArr = append(
+			paramsArr,
+			reflect.ValueOf(
+				k.requestContainer.Resolve(reflect.New(paramItemType).Elem().Interface(), nil, true),
+			),
+		)
+	}
+
+	// try to call controller.
+	responseArr := targetMethod.Call(paramsArr)
+	return responseArr[0].Interface().(*Http.Response)
 }
 
 func (k *Kernel) containerFoundation(request *Http.Request, response *Http.Response) {
-	requestContainer := k.GetRequestInstance()
-
-	// binding context
-	// ctx := context.Background()
-	requestContainer.AddBinding(
-		new(context.Context),
-		Container2.NewBindingImpl(&test{A: 9}).SetShared().SetAlias("ctx"),
-	)
+	requestContainer := k.GetRequestContainer()
 
 	// binding request.
 	requestContainer.Singleton(request, "request")

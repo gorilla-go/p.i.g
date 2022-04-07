@@ -18,7 +18,7 @@ func main() {
 
 	// set global container.
 	container.AddBinding((*Server.IServer)(nil), Container.NewBindingImpl(&Http2.HttpServer{}))
-	httpServer := container.GetInstanceByAbstract((*Server.IServer)(nil)).(Server.IServer)
+	httpServer := container.GetSingletonByAbstract((*Server.IServer)(nil)).(Server.IServer)
 
 	// config.
 	appConfig := Config2.App()

@@ -8,6 +8,6 @@ type Kernel struct {
 	Http.Kernel
 }
 
-func (k *Kernel) RequestInstance() {
+func (k *Kernel) ServicesRegister() {
 
 }

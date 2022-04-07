@@ -3,26 +3,22 @@ package Http
 import "net/http"
 
 type Response struct {
-	*http.Response
+	responseWriter http.ResponseWriter
 }
 
-func GetNewResponse(response *http.Response) *Response {
-	return &Response{
-		&http.Response{
-			Status:           response.Status,
-			StatusCode:       response.StatusCode,
-			Proto:            response.Proto,
-			ProtoMajor:       response.ProtoMajor,
-			ProtoMinor:       response.ProtoMinor,
-			Header:           response.Header,
-			Body:             response.Body,
-			ContentLength:    response.ContentLength,
-			TransferEncoding: response.TransferEncoding,
-			Close:            response.Close,
-			Uncompressed:     response.Uncompressed,
-			Trailer:          response.Trailer,
-			Request:          response.Request,
-			TLS:              response.TLS,
-		},
+func BuildResponse(responseWriter http.ResponseWriter) *Response {
+	return &Response{responseWriter: responseWriter}
+}
+
+func (r *Response) SetCode(code int) *Response {
+	r.responseWriter.WriteHeader(code)
+	return r
+}
+
+func (r *Response) Write(content string) *Response {
+	_, err := r.responseWriter.Write([]byte(content))
+	if err != nil {
+		panic(err)
 	}
+	return r
 }

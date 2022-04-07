@@ -10,7 +10,7 @@ import (
 
 type IApp interface {
 	Initializer(server Server2.IServer)
-	Handle(request *Http.Request) *Http.Response
+	Handle(request *Http.Request, response *Http.Response) *Http.Response
 	GetContainer() Container.IContainer
 	GetServer() Server2.IServer
 	GetExceptionHandler() Debug.IExceptionHandler
