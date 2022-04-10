@@ -1,9 +1,13 @@
 package Http
 
 import (
+	"fmt"
+	"php-in-go/App/Http/Middleware"
 	Container2 "php-in-go/Include/Container"
+	"php-in-go/Include/Contracts/Container"
 	Http2 "php-in-go/Include/Contracts/Http"
 	"php-in-go/Include/Contracts/Http/Controller"
+	"php-in-go/Include/Contracts/Http/Session"
 	Controller2 "php-in-go/Include/Foundation/Http/Controller"
 	"php-in-go/Include/Http"
 	"php-in-go/Include/Routing"
@@ -19,9 +23,6 @@ func (k *Kernel) Bootstrap(app Http2.IApp) {
 	k.app = app
 }
 
-// ServicesRegister init request instance bean.
-func (k *Kernel) ServicesRegister() {}
-
 // GetRequestContainer get current request container.
 func (k *Kernel) GetRequestContainer() *Container2.Container {
 	return k.requestContainer
@@ -33,7 +34,7 @@ func (k *Kernel) GetApp() Http2.IApp {
 }
 
 // Handle each request kernel.
-func (k *Kernel) Handle(request *Http.Request, response *Http.Response) *Http.Response {
+func (k *Kernel) Handle(request *Http.Request, response *Http.Response) {
 	// register error handle.
 	//defer func() {
 	//	err := recover()
@@ -51,25 +52,28 @@ func (k *Kernel) Handle(request *Http.Request, response *Http.Response) *Http.Re
 	// resolve container foundation
 	k.containerFoundation(request, response)
 
-	// init context.
-	k.ServicesRegister()
-
-	// init background.
+	// route resolve.
 	actionTarget := k.app.GetRouter().Resolve(request)
 
+	// middleware
+	if k.middlewareHandler(actionTarget, request, response) == false {
+		return
+	}
+
 	// call method.
-	return k.dispatch(actionTarget, request, response)
+	k.dispatch(actionTarget, request, response)
 }
 
 // dispatch call correct controller method.
-func (k *Kernel) dispatch(target *Routing.Target, request *Http.Request, response *Http.Response) *Http.Response {
+func (k *Kernel) dispatch(target *Routing.Target, request *Http.Request, response *Http.Response) {
 	// page no found
 	if target == nil {
 		baseController := &Controller2.BaseController{
 			Request:  request,
 			Response: response,
 		}
-		return baseController.NoFound()
+		baseController.NoFound()
+		return
 	}
 
 	// resolve controller params.
@@ -80,9 +84,7 @@ func (k *Kernel) dispatch(target *Routing.Target, request *Http.Request, respons
 
 	// no found method ? to NoFound method in base controller.
 	if targetMethod.IsValid() == false {
-		noFoundMethod := reflect.ValueOf(targetController).MethodByName("NoFound")
-		responseArr := noFoundMethod.Call([]reflect.Value{})
-		return responseArr[0].Interface().(*Http.Response)
+		panic(fmt.Sprintf("Controller method no found: %s", target.Method))
 	}
 
 	// resolve func params.
@@ -108,16 +110,41 @@ func (k *Kernel) dispatch(target *Routing.Target, request *Http.Request, respons
 	}
 
 	// try to call controller.
-	responseArr := targetMethod.Call(paramsArr)
-	return responseArr[0].Interface().(*Http.Response)
+	targetMethod.Call(paramsArr)
 }
 
 func (k *Kernel) containerFoundation(request *Http.Request, response *Http.Response) {
 	requestContainer := k.GetRequestContainer()
+
+	// app.
+	requestContainer.AddBinding((*Http2.IApp)(nil), Container2.NewBindingImpl(k.app))
+
+	// request container.
+	requestContainer.AddBinding((*Container.IContainer)(nil), Container2.NewBindingImpl(k.requestContainer))
 
 	// binding request.
 	requestContainer.Singleton(request, "request")
 
 	// binding response
 	requestContainer.Singleton(response, "response")
+
+	// session drive.
+	requestContainer.AddBinding(
+		(*Session.ISession)(nil),
+		Container2.NewBindingImpl(
+			k.app.GetContainer().GetSingletonByAbstract((*Session.ISession)(nil)),
+		),
+	)
+}
+
+func (k *Kernel) middlewareHandler(target *Routing.Target, request *Http.Request, response *Http.Response) bool {
+	middlewares := Middleware.Middlewares()
+	if len(middlewares) > 0 {
+		for _, middleware := range middlewares {
+			if middleware.Handle(request, response, target) == false {
+				return false
+			}
+		}
+	}
+	return true
 }

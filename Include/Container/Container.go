@@ -40,11 +40,6 @@ func (c *Container) AddBinding(abstract interface{}, elem *BindingImpl) {
 
 // Singleton Register singleton.
 func (c *Container) Singleton(instance interface{}, alias string) {
-	// un-support non-pointer type.
-	typeInstance := reflect.TypeOf(instance).Kind()
-	if typeInstance != reflect.Ptr {
-		panic(errors.New("Non-pointer type: " + typeInstance.String()))
-	}
 	mapName := GetPackageClassName(instance)
 	c.singleton[mapName] = instance
 	if alias != "" {

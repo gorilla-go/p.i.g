@@ -2,9 +2,9 @@ package Middleware
 
 import (
 	"php-in-go/Include/Http"
-	Routing2 "php-in-go/Include/Routing/Component"
+	"php-in-go/Include/Routing"
 )
 
 type IMiddleware interface {
-	HandleRequest(request *Http.Request, r *Routing2.RouteMap)
+	Handle(request *Http.Request, response *Http.Response, target *Routing.Target) bool
 }

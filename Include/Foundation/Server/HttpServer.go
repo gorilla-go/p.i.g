@@ -12,10 +12,11 @@ import (
 )
 
 type HttpServer struct {
-	port      int
-	bashPath  string
-	app       Http.IApp
-	container Container.IContainer
+	port       int
+	bashPath   string
+	app        Http.IApp
+	container  Container.IContainer
+	sessionKey string
 }
 
 func (s *HttpServer) Initializer(config Config.HttpServer) {
@@ -45,9 +46,7 @@ func (s *HttpServer) Start() {
 
 	// start server.
 	http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
-		go func() {
-			s.app.Handle(Http2.BuildRequest(request), Http2.BuildResponse(writer))
-		}()
+		s.app.Handle(Http2.BuildRequest(request), Http2.BuildResponse(writer))
 	})
 
 	err := http.ListenAndServe(fmt.Sprintf(":%d", s.port), nil)

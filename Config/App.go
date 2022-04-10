@@ -3,7 +3,11 @@ package Config
 // App get app config.
 func App() map[string]interface{} {
 	return map[string]interface{}{
-		// server start port
+		// server.
 		"port": 8084,
+
+		// session.
+		"sessionExpire": 60 * 60 * 24,
+		"sessionKey":    "PHP_SSID",
 	}
 }
