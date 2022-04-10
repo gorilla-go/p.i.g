@@ -10,6 +10,7 @@ func Route() (maps []*Component.RouteMap) {
 	maps = []*Component.RouteMap{
 		// user routes.
 		Component.NewRouteMap("/", &Controller.Index{}, "Index"),
+		Component.NewRouteMap("/name", &Controller.Index{}, "Name"),
 
 		Component.NewRouteMap("/{name}/get_name", &Controller.Index{}, "Index"),
 	}

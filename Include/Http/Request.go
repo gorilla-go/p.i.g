@@ -28,8 +28,23 @@ func BuildRequest(request *http.Request) *Request {
 			RemoteAddr:       request.RemoteAddr,
 			RequestURI:       request.RequestURI,
 			TLS:              request.TLS,
-			Cancel:           request.Cancel,
 			Response:         request.Response,
 		},
 	}
+}
+
+func (r *Request) IsAjax() bool {
+	return false
+}
+
+func (r *Request) IsPjax() bool {
+	return false
+}
+
+func (r *Request) Param(s string) string {
+	return ""
+}
+
+func (r *Request) PostVar(s string) string {
+	return ""
 }
