@@ -160,7 +160,10 @@ nextLoop:
 		for k, v := range paramsQuery {
 			rawQuery.Set(k, v)
 		}
-		return uri.String() + "?" + rawQuery.Encode()
+		if rawQuery.Encode() != "" {
+			return uri.String() + "?" + rawQuery.Encode()
+		}
+		return uri.String()
 	}
 	panic(errors.New("no found route"))
 }

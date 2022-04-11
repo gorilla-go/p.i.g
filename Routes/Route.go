@@ -12,7 +12,7 @@ func Route() (maps []*Component.RouteMap) {
 		Component.NewRouteMap("/", &Controller.Index{}, "Index"),
 		Component.NewRouteMap("/name", &Controller.Index{}, "Name"),
 
-		Component.NewRouteMap("/{name}/get_name", &Controller.Index{}, "Index"),
+		Component.NewRouteMap("/{name}/get_name", &Controller.Index{}, "Name"),
 	}
 	return
 }
