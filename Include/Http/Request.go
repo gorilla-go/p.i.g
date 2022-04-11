@@ -1,14 +1,21 @@
 package Http
 
-import "net/http"
+import (
+	"net/http"
+	"net/url"
+	"php-in-go/Config"
+	"strings"
+)
 
 type Request struct {
+	Params *url.Values
 	*http.Request
 }
 
 func BuildRequest(request *http.Request) *Request {
 	return &Request{
-		&http.Request{
+		Params: nil,
+		Request: &http.Request{
 			Method:           request.Method,
 			URL:              request.URL,
 			Proto:            request.Proto,
@@ -34,17 +41,53 @@ func BuildRequest(request *http.Request) *Request {
 }
 
 func (r *Request) IsAjax() bool {
-	return false
+	return r.Header.Get("X-Requested-With") == "XMLHttpRequest"
 }
 
 func (r *Request) IsPjax() bool {
-	return false
+	routeConfig := Config.Route()
+	if r.IsAjax() == false {
+		return false
+	}
+	_, b := r.ParamVar(routeConfig["pjaxName"].(string))
+	return b
 }
 
-func (r *Request) Param(s string) string {
-	return ""
+func (r *Request) ParamVar(s string) (string, bool) {
+	if r.Params.Has(s) == false {
+		return "", false
+	}
+	return r.Params.Get(s), true
 }
 
-func (r *Request) PostVar(s string) string {
-	return ""
+func (r *Request) PostVar(s string) interface{} {
+	contentType := r.Request.Header.Get("Content-Type")
+	if strings.Contains(contentType, "form-data") {
+		if err := r.Request.ParseMultipartForm(1024 * 8); err != nil {
+			panic(err)
+		}
+		v := r.Request.MultipartForm.Value
+		if val, exist := v[s]; exist && len(val) == 1 {
+			return val[0]
+		}
+		if v, e := v[s+"[]"]; e {
+			return v
+		}
+		return nil
+	}
+
+	if strings.Contains(contentType, "x-www-form-urlencoded") {
+		if err := r.Request.ParseForm(); err != nil {
+			panic(err)
+		}
+		v := r.Request.PostForm
+		if v.Has(s) {
+			return v.Get(s)
+		}
+		if v.Has(s + "[]") {
+			return v.Get(s + "[]")
+		}
+		return nil
+	}
+	return nil
 }

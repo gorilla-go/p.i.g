@@ -25,8 +25,18 @@ func (r *Router) Resolve(request *Http.Request) *Target {
 		requestUri = requestUri[:len(requestUri)-len("."+v.(string))]
 	}
 
+	// remove query
+	routeFormatArr := strings.Split(requestUri, "?")
+	if len(routeFormatArr) == 2 {
+		requestUri = routeFormatArr[0]
+	}
+
 	// split.
 	routePathArr := strings.Split(requestUri, "/")
+
+	// set query params
+	values := request.URL.Query()
+	request.Params = &values
 
 	// resolve route path.
 routeLoop:
@@ -52,13 +62,15 @@ routeLoop:
 			}
 		}
 
-		// init route params.
-		var routeParams = make(map[string]string)
-
 		// pattern item
 		for key, pathItem := range uriFormatArr {
 			if len(pathItem) > 2 && pathItem[0:1] == "{" && pathItem[len(pathItem)-1:] == "}" {
-				routeParams[pathItem[1:len(pathItem)-1]] = routePathArr[key]
+				k := pathItem[1 : len(pathItem)-1]
+				if request.Params.Has(k) {
+					request.Params.Set(k, routePathArr[key])
+					continue
+				}
+				request.Params.Add(k, routePathArr[key])
 				continue
 			}
 
@@ -68,9 +80,8 @@ routeLoop:
 		}
 
 		return &Target{
-			Controller:  route.GetController(),
-			Method:      route.GetMethod(),
-			RouteParams: routeParams,
+			Controller: route.GetController(),
+			Method:     route.GetMethod(),
 		}
 	}
 
