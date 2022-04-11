@@ -10,9 +10,11 @@ type Index struct {
 }
 
 func (t *Index) Index(request *Http.Request, response *Http.Response) {
-	println(t.GetRouter().Url(&Index{}, "Index", map[string]string{"cc": "bb", "t": "aa"}))
+	var m map[string]string
+	m["A"] = "a"
+	response.Echo("Dd")
 }
 
 func (t *Index) Name(response *Http.Response) {
-	response.Echo(t.Session.GetSession("a"))
+	response.Echo(t.Session.GetSession(""))
 }

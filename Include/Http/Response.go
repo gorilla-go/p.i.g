@@ -15,7 +15,7 @@ func BuildResponse(responseWriter http.ResponseWriter) *Response {
 	return &Response{responseWriter: responseWriter}
 }
 
-func (r *Response) SetCode(code int) *Response {
+func (r *Response) setCode(code int) *Response {
 	r.responseWriter.WriteHeader(code)
 	return r
 }
@@ -34,13 +34,19 @@ func (r *Response) write(content string) {
 
 func (r *Response) Html(content string) {
 	r.SetHeader("content-type", "text/html; charset=utf-8")
-	r.SetCode(http.StatusOK)
+	r.setCode(http.StatusOK)
+	r.write(content)
+}
+
+func (r *Response) HtmlWithCode(content string, code int) {
+	r.SetHeader("content-type", "text/html; charset=utf-8")
+	r.setCode(code)
 	r.write(content)
 }
 
 func (r *Response) Json(j interface{}) {
-	r.SetHeader("content-type", "application/json")
-	r.SetCode(http.StatusOK)
+	r.SetHeader("content-type", "application/json; charset=utf-8")
+	r.setCode(http.StatusOK)
 	marshal, err := json.Marshal(j)
 	if err != nil {
 		panic(err)
@@ -54,7 +60,7 @@ func (r *Response) AddCookie(cookie *http.Cookie) {
 
 func (r *Response) Dump(i interface{}) {
 	r.SetHeader("content-type", "text/html; charset=utf-8")
-	r.SetCode(http.StatusOK)
+	r.setCode(http.StatusOK)
 	r.write(Util.Dump(i, 1))
 }
 

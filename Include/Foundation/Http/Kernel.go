@@ -4,14 +4,18 @@ import (
 	"fmt"
 	"php-in-go/App/Http/Middleware"
 	Container2 "php-in-go/Include/Container"
+	"php-in-go/Include/Contracts/Cache"
 	"php-in-go/Include/Contracts/Container"
+	"php-in-go/Include/Contracts/Debug"
 	Http2 "php-in-go/Include/Contracts/Http"
 	"php-in-go/Include/Contracts/Http/Controller"
 	"php-in-go/Include/Contracts/Http/Session"
+	"php-in-go/Include/Foundation/Exceptions"
 	Controller2 "php-in-go/Include/Foundation/Http/Controller"
 	"php-in-go/Include/Http"
 	"php-in-go/Include/Routing"
 	"reflect"
+	"runtime"
 )
 
 type Kernel struct {
@@ -36,15 +40,21 @@ func (k *Kernel) GetApp() Http2.IApp {
 // Handle each request kernel.
 func (k *Kernel) Handle(request *Http.Request, response *Http.Response) {
 	// register error handle.
-	//defer func() {
-	//	err := recover()
-	//	if err != nil {
-	//		v := make([]byte, 1024)
-	//		runtime.Stack(v, true)
-	//		fmt.Println(string(v))
-	//	}
-	//}()
-	// init response
+	defer func() {
+		err := recover()
+		if err != nil {
+			exception := k.app.GetContainer().GetSingletonByAbstract((*Debug.IExceptionHandler)(nil)).(Debug.IExceptionHandler)
+			v := make([]byte, 1024*2)
+			runtime.Stack(v, true)
+			exception.Handle(
+				Exceptions.NewException(
+					1,
+					fmt.Sprintf("%v\n\n%v", err, string(v)),
+				),
+				response,
+			)
+		}
+	}()
 
 	// init request container
 	k.requestContainer = Container2.NewContainer()
@@ -127,6 +137,14 @@ func (k *Kernel) containerFoundation(request *Http.Request, response *Http.Respo
 
 	// binding response
 	requestContainer.Singleton(response, "response")
+
+	// cache drive.
+	requestContainer.AddBinding(
+		(*Cache.ICache)(nil),
+		Container2.NewBindingImpl(
+			k.app.GetContainer().GetSingletonByAbstract((*Cache.ICache)(nil)),
+		),
+	)
 
 	// session drive.
 	requestContainer.AddBinding(

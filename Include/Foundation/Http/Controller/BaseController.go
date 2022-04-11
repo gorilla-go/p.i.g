@@ -1,6 +1,8 @@
 package Controller
 
 import (
+	"net/http"
+	"php-in-go/Include/Contracts/Cache"
 	"php-in-go/Include/Contracts/Container"
 	Http2 "php-in-go/Include/Contracts/Http"
 	"php-in-go/Include/Contracts/Http/Session"
@@ -14,11 +16,12 @@ type BaseController struct {
 	Request   *Http.Request
 	Response  *Http.Response
 	Session   Session.ISession
+	Cache     Cache.ICache
 }
 
 //NoFound no found action.
 func (c *BaseController) NoFound() {
-	c.Response.Html("<p>page no found </p>")
+	c.Response.HtmlWithCode("<h2>404</h2><h4>page no found! </h4>", http.StatusNotFound)
 }
 
 // GetRouter get router.
