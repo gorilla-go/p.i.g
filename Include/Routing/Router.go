@@ -1,8 +1,12 @@
 package Routing
 
 import (
+	"errors"
+	"net/url"
+	"php-in-go/Include/Container"
 	"php-in-go/Include/Http"
 	"php-in-go/Include/Routing/Component"
+	"sort"
 	"strings"
 )
 
@@ -20,15 +24,15 @@ func (r *Router) Initializer(routeMaps []*Component.RouteMap, routeConfig map[st
 func (r *Router) Resolve(request *Http.Request) *Target {
 	requestUri := request.RequestURI
 
-	// remove target.
-	if v, ok := r.routeConfig["urlHtmlSuffix"]; v != "" && ok && strings.HasSuffix(requestUri, "."+v.(string)) {
-		requestUri = requestUri[:len(requestUri)-len("."+v.(string))]
-	}
-
 	// remove query
 	routeFormatArr := strings.Split(requestUri, "?")
 	if len(routeFormatArr) == 2 {
 		requestUri = routeFormatArr[0]
+	}
+
+	// remove target.
+	if v, ok := r.routeConfig["urlHtmlSuffix"]; v != "" && ok && strings.HasSuffix(requestUri, "."+v.(string)) {
+		requestUri = requestUri[:len(requestUri)-len("."+v.(string))]
 	}
 
 	// split.
@@ -91,5 +95,72 @@ routeLoop:
 
 // Url resolve controller action to format url.
 func (r *Router) Url(Controller interface{}, method string, params map[string]string) string {
-	return ""
+	var routeMapsArr []*Component.RouteMap
+
+	for _, routeMap := range r.routeMaps {
+		if Container.GetPackageClassName(routeMap.GetController()) == Container.GetPackageClassName(Controller) &&
+			routeMap.GetMethod() == method {
+			routeMapsArr = append(routeMapsArr, routeMap)
+		}
+	}
+
+	sort.Slice(routeMapsArr, func(i, j int) bool {
+		cur := routeMapsArr[i].GetUriFormat()
+		splitArr := strings.Split(cur, "/")
+		curCount := 0
+		for _, s := range splitArr {
+			if strings.HasPrefix(s, "{") && strings.HasSuffix(s, "}") {
+				curCount++
+			}
+		}
+		next := routeMapsArr[j].GetUriFormat()
+		splitNextArr := strings.Split(next, "/")
+		nextCount := 0
+		for _, sn := range splitNextArr {
+			if strings.HasPrefix(sn, "{") && strings.HasSuffix(sn, "}") {
+				nextCount++
+			}
+		}
+		return curCount > nextCount
+	})
+
+	paramsMap := make(map[string]string)
+	paramsQuery := params
+
+nextLoop:
+	for _, routeMap := range routeMapsArr {
+		uriFormat := routeMap.GetUriFormat()
+		splitArr := strings.Split(uriFormat, "/")
+		for _, s := range splitArr {
+			if strings.HasPrefix(s, "{") && strings.HasSuffix(s, "}") {
+				if _, exist := params[s[1:len(s)-1]]; !exist {
+					paramsMap = make(map[string]string)
+					paramsQuery = params
+					continue nextLoop
+				} else {
+					paramsMap[s] = params[s[1:len(s)-1]]
+					delete(paramsQuery, s[1:len(s)-1])
+				}
+			}
+		}
+		for old, newValue := range paramsMap {
+			uriFormat = strings.Replace(uriFormat, old, newValue, 1)
+		}
+
+		// add suffix.
+		if v, ok := r.routeConfig["urlHtmlSuffix"]; v != "" && ok && routeMap.GetUriFormat() != "/" {
+			uriFormat += "." + r.routeConfig["urlHtmlSuffix"].(string)
+		}
+
+		uri, err := url.Parse(uriFormat)
+		if err != nil {
+			panic(err)
+		}
+		rawQuery := uri.Query()
+		for k, v := range paramsQuery {
+			rawQuery.Set(k, v)
+		}
+		return uri.String() + "?" + rawQuery.Encode()
+	}
+	panic(errors.New("no found route"))
 }

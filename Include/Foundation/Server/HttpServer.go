@@ -38,12 +38,6 @@ func (s *HttpServer) Start() {
 	// set global container to http kernel
 	s.app.Initializer(s)
 
-	// handle logo.
-	http.HandleFunc("/favicon.ico", func(writer http.ResponseWriter, request *http.Request) {
-		writer.WriteHeader(200)
-		writer.Write([]byte(""))
-	})
-
 	// start server.
 	http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
 		s.app.Handle(Http2.BuildRequest(request), Http2.BuildResponse(writer))
