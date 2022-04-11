@@ -1,6 +1,7 @@
 package Controller
 
 import (
+	"net/http"
 	"php-in-go/Include/Foundation/Http/Controller"
 	"php-in-go/Include/Http"
 )
@@ -10,9 +11,7 @@ type Index struct {
 }
 
 func (t *Index) Index(request *Http.Request, response *Http.Response) {
-	var m map[string]string
-	m["A"] = "a"
-	response.Echo("Dd")
+	response.Redirect("https://www.baidu.com", http.StatusMovedPermanently)
 }
 
 func (t *Index) Name(response *Http.Response) {

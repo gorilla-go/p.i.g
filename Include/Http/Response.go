@@ -72,3 +72,8 @@ func (r *Response) Echo(i interface{}) {
 	r.SetHeader("content-type", "text/plain; charset=utf-8")
 	r.write(fmt.Sprintf("%v", i))
 }
+
+func (r *Response) Redirect(url string, code int) {
+	r.SetHeader("Location", url)
+	r.setCode(code)
+}
