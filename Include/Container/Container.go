@@ -128,6 +128,8 @@ func (c *Container) Resolve(abstract interface{}, params map[string]interface{},
 	case reflect.Struct:
 		r = c.build(abstract, params, new)
 		break
+	case reflect.Func:
+		r = c.callFunc(abstract, params, new)
 	default:
 		r = reflect.New(originRefType).Elem()
 		break
@@ -137,6 +139,53 @@ func (c *Container) Resolve(abstract interface{}, params map[string]interface{},
 	c.fireAfterResolvingCallbacks(&r, abstract)
 
 	return
+}
+
+// callFunc resolve function and call with params.
+func (c *Container) callFunc(abstract interface{}, params map[string]interface{}, new bool) interface{} {
+	// resolve target method
+	targetMethod := reflect.ValueOf(abstract)
+
+	// invalid method ?
+	if targetMethod.IsValid() == false {
+		panic("Invalid Method.")
+	}
+
+	// format params.
+	var paramValues []reflect.Value
+	for _, i := range params {
+		paramValues = append(paramValues, reflect.ValueOf(i))
+	}
+
+	// resolve func params.
+	var paramsArr []reflect.Value
+	paramsNum := targetMethod.Type().NumIn()
+
+	for i := 0; i < paramsNum; i++ {
+		if len(paramValues) < i {
+			paramsArr = append(paramsArr, paramValues[i])
+			continue
+		}
+
+		// get param item type.
+		paramItemType := targetMethod.Type().In(i)
+
+		// is interface?
+		if paramItemType.Kind() == reflect.Interface {
+			paramItemType = reflect.PtrTo(paramItemType)
+		}
+
+		// append to params arr.
+		paramsArr = append(
+			paramsArr,
+			reflect.ValueOf(
+				c.Resolve(reflect.New(paramItemType).Elem().Interface(), nil, new),
+			),
+		)
+	}
+
+	// try to call controller.
+	return targetMethod.Call(paramsArr)
 }
 
 func (c *Container) resolveAbstract(abstract reflect.Type, params map[string]interface{}, new bool) interface{} {

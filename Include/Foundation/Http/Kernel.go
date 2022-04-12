@@ -56,7 +56,7 @@ func (k *Kernel) Handle(request *Http.Request, response *Http.Response) {
 			)
 
 			// set runtime exception stack
-			response.RuntimeStack = string(v)
+			response.ErrorStack = string(v)
 			response.ErrorMessage = fmt.Sprintf("%v", err)
 		}
 
@@ -105,30 +105,8 @@ func (k *Kernel) dispatch(target *Routing.Target, request *Http.Request, respons
 		panic(fmt.Sprintf("Controller method no found: %s", target.Method))
 	}
 
-	// resolve func params.
-	var paramsArr []reflect.Value
-	paramsNum := targetMethod.Type().NumIn()
-
-	for i := 0; i < paramsNum; i++ {
-		// get param item type.
-		paramItemType := targetMethod.Type().In(i)
-
-		// is interface?
-		if paramItemType.Kind() == reflect.Interface {
-			paramItemType = reflect.PtrTo(paramItemType)
-		}
-
-		// append to params arr.
-		paramsArr = append(
-			paramsArr,
-			reflect.ValueOf(
-				k.requestContainer.Resolve(reflect.New(paramItemType).Elem().Interface(), nil, true),
-			),
-		)
-	}
-
-	// try to call controller.
-	targetMethod.Call(paramsArr)
+	// call method.
+	k.GetRequestContainer().Resolve(targetMethod.Interface(), nil, false)
 }
 
 func (k *Kernel) containerFoundation(request *Http.Request, response *Http.Response) {

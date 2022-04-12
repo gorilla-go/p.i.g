@@ -9,8 +9,10 @@ type Index struct {
 	Controller.BaseController
 }
 
-func (t *Index) Index(request *Http.Request, response *Http.Response) {
-	t.Response.Download(t.GetRoot()+"main.go", "main.go")
+func (t *Index) Index() {
+	t.BaseController.Container.Resolve(func(response *Http.Response) {
+		response.Echo("1")
+	}, nil, true)
 }
 
 func (t *Index) Name(response *Http.Response) {

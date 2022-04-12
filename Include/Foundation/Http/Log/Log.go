@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 	"php-in-go/Config"
-	"php-in-go/Include/Foundation/Util"
 	"php-in-go/Include/Http"
+	Util2 "php-in-go/Include/Util"
 	"time"
 )
 
@@ -38,8 +38,8 @@ func (l *Log) Log(request *Http.Request, response *Http.Response) {
 	}
 	file := fmt.Sprintf("%s/%s%s/", rootFile, path, filePrefix)
 
-	if Util.IsFile(file) == false {
-		Util.Mkdir(file)
+	if Util2.IsFile(file) == false {
+		Util2.Mkdir(file)
 	}
 	f, err := os.OpenFile(
 		fmt.Sprintf(
@@ -64,7 +64,7 @@ func (l *Log) Log(request *Http.Request, response *Http.Response) {
 		request.Method,
 		request.RequestURI,
 		response.ErrorMessage,
-		response.RuntimeStack,
+		response.ErrorStack,
 	)
 	_, err = f.Write([]byte(s))
 	if err != nil {

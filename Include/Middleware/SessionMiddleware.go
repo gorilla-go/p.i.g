@@ -3,9 +3,9 @@ package Middleware
 import (
 	"net/http"
 	"php-in-go/Config"
-	"php-in-go/Include/Foundation/Util"
 	"php-in-go/Include/Http"
 	"php-in-go/Include/Routing"
+	"php-in-go/Include/Util"
 	"time"
 )
 

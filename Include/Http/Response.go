@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"php-in-go/Include/Foundation/Util"
+	Util2 "php-in-go/Include/Util"
 	"strconv"
 )
 
 type Response struct {
 	Code           int
 	responseWriter http.ResponseWriter
-	RuntimeStack   string
+	ErrorStack     string
 	ErrorMessage   string
 }
 
@@ -67,7 +67,7 @@ func (r *Response) AddCookie(cookie *http.Cookie) {
 func (r *Response) Dump(i interface{}) {
 	r.SetHeader("content-type", "text/html; charset=utf-8")
 	r.SetCode(http.StatusOK)
-	r.write(Util.Dump(i, 1))
+	r.write(Util2.Dump(i, 1))
 }
 
 func (r *Response) View(template string, params map[string]interface{}) {
@@ -91,7 +91,7 @@ func (r *Response) EchoWithCode(i interface{}, code int) {
 }
 
 func (r *Response) Download(file string, name string) {
-	if Util.IsFile(file) == false {
+	if Util2.IsFile(file) == false {
 		panic("Invalid file path: " + file)
 	}
 	fileBytes, err := ioutil.ReadFile(file)
@@ -102,6 +102,7 @@ func (r *Response) Download(file string, name string) {
 	r.SetHeader("Accept-Ranges", "bytes")
 	r.SetHeader("Accept-Length", strconv.Itoa(len(fileBytes)))
 	r.SetHeader("Content-Disposition", "attachment; filename="+name)
+	r.SetCode(200)
 	_, err = r.responseWriter.Write(fileBytes)
 	if err != nil {
 		panic(err)
