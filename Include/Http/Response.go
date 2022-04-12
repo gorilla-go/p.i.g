@@ -8,14 +8,17 @@ import (
 )
 
 type Response struct {
+	Code           int
 	responseWriter http.ResponseWriter
+	RuntimeStack   string
 }
 
 func BuildResponse(responseWriter http.ResponseWriter) *Response {
 	return &Response{responseWriter: responseWriter}
 }
 
-func (r *Response) setCode(code int) *Response {
+func (r *Response) SetCode(code int) *Response {
+	r.Code = code
 	r.responseWriter.WriteHeader(code)
 	return r
 }
@@ -34,19 +37,19 @@ func (r *Response) write(content string) {
 
 func (r *Response) Html(content string) {
 	r.SetHeader("content-type", "text/html; charset=utf-8")
-	r.setCode(http.StatusOK)
+	r.SetCode(http.StatusOK)
 	r.write(content)
 }
 
 func (r *Response) HtmlWithCode(content string, code int) {
 	r.SetHeader("content-type", "text/html; charset=utf-8")
-	r.setCode(code)
+	r.SetCode(code)
 	r.write(content)
 }
 
 func (r *Response) Json(j interface{}) {
 	r.SetHeader("content-type", "application/json; charset=utf-8")
-	r.setCode(http.StatusOK)
+	r.SetCode(http.StatusOK)
 	marshal, err := json.Marshal(j)
 	if err != nil {
 		panic(err)
@@ -60,7 +63,7 @@ func (r *Response) AddCookie(cookie *http.Cookie) {
 
 func (r *Response) Dump(i interface{}) {
 	r.SetHeader("content-type", "text/html; charset=utf-8")
-	r.setCode(http.StatusOK)
+	r.SetCode(http.StatusOK)
 	r.write(Util.Dump(i, 1))
 }
 
@@ -68,12 +71,23 @@ func (r *Response) View(template string, params map[string]interface{}) {
 
 }
 
+func (r *Response) GetResponseWriter() http.ResponseWriter {
+	return r.responseWriter
+}
+
 func (r *Response) Echo(i interface{}) {
 	r.SetHeader("content-type", "text/plain; charset=utf-8")
+	r.SetCode(http.StatusOK)
+	r.write(fmt.Sprintf("%v", i))
+}
+
+func (r *Response) EchoWithCode(i interface{}, code int) {
+	r.SetHeader("content-type", "text/plain; charset=utf-8")
+	r.SetCode(code)
 	r.write(fmt.Sprintf("%v", i))
 }
 
 func (r *Response) Redirect(url string, code int) {
 	r.SetHeader("Location", url)
-	r.setCode(code)
+	r.SetCode(code)
 }

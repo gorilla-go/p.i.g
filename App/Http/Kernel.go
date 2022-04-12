@@ -1,4 +1,4 @@
-package Middleware
+package Http
 
 import (
 	"php-in-go/Include/Contracts/Middleware"

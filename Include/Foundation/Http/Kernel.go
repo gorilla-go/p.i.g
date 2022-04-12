@@ -2,7 +2,7 @@ package Http
 
 import (
 	"fmt"
-	"php-in-go/App/Http/Middleware"
+	Http3 "php-in-go/App/Http"
 	Container2 "php-in-go/Include/Container"
 	"php-in-go/Include/Contracts/Cache"
 	"php-in-go/Include/Contracts/Container"
@@ -41,6 +41,7 @@ func (k *Kernel) GetApp() Http2.IApp {
 func (k *Kernel) Handle(request *Http.Request, response *Http.Response) {
 	// register error handle.
 	defer func() {
+		// catch exception.
 		err := recover()
 		if err != nil {
 			exception := k.app.GetContainer().GetSingletonByAbstract((*Debug.IExceptionHandler)(nil)).(Debug.IExceptionHandler)
@@ -53,7 +54,13 @@ func (k *Kernel) Handle(request *Http.Request, response *Http.Response) {
 				),
 				response,
 			)
+
+			// set runtime exception stack
+			response.RuntimeStack = string(v)
 		}
+
+		// logger.
+		go k.app.GetLogger().Log(request, response)
 	}()
 
 	// init request container
@@ -156,7 +163,7 @@ func (k *Kernel) containerFoundation(request *Http.Request, response *Http.Respo
 }
 
 func (k *Kernel) middlewareHandler(target *Routing.Target, request *Http.Request, response *Http.Response) bool {
-	middlewares := Middleware.Middlewares()
+	middlewares := Http3.Middlewares()
 	if len(middlewares) > 0 {
 		for _, middleware := range middlewares {
 			if middleware.Handle(request, response, target) == false {

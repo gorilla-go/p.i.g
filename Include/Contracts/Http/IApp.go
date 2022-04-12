@@ -3,6 +3,7 @@ package Http
 import (
 	"php-in-go/Include/Contracts/Container"
 	"php-in-go/Include/Contracts/Debug"
+	"php-in-go/Include/Contracts/Http/Log"
 	"php-in-go/Include/Contracts/Routing"
 	Server2 "php-in-go/Include/Contracts/Server"
 	"php-in-go/Include/Http"
@@ -15,4 +16,5 @@ type IApp interface {
 	GetServer() Server2.IServer
 	GetExceptionHandler() Debug.IExceptionHandler
 	GetRouter() Routing.IRouter
+	GetLogger() Log.ILog
 }

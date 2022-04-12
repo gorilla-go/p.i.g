@@ -8,11 +8,13 @@ import (
 	"php-in-go/Include/Contracts/Container"
 	"php-in-go/Include/Contracts/Debug"
 	Http2 "php-in-go/Include/Contracts/Http"
+	"php-in-go/Include/Contracts/Http/Log"
 	"php-in-go/Include/Contracts/Http/Session"
 	"php-in-go/Include/Contracts/Routing"
 	Server2 "php-in-go/Include/Contracts/Server"
 	Cache2 "php-in-go/Include/Foundation/Cache"
 	Http4 "php-in-go/Include/Foundation/Http"
+	Log2 "php-in-go/Include/Foundation/Http/Log"
 	Session2 "php-in-go/Include/Foundation/Http/Session"
 	"php-in-go/Include/Http"
 	Routing2 "php-in-go/Include/Routing"
@@ -27,6 +29,7 @@ type App struct {
 	kernel           Http2.IKernel
 	session          Session.ISession
 	cache            Cache.ICache
+	log              Log.ILog
 }
 
 func (a *App) Initializer(server Server2.IServer) {
@@ -56,6 +59,10 @@ func (a *App) Initializer(server Server2.IServer) {
 	a.container.AddBinding((*Session.ISession)(nil), Container2.NewBindingImpl(&Session2.Session{}))
 	a.session = a.container.GetSingletonByAbstract((*Session.ISession)(nil)).(Session.ISession)
 	a.session.StartSessionManager(a.cache)
+
+	// set log server
+	a.container.AddBinding((*Log.ILog)(nil), Container2.NewBindingImpl(&Log2.Log{}))
+	a.log = a.container.GetSingletonByAbstract((*Log.ILog)(nil)).(Log.ILog)
 }
 
 func (a *App) Handle(request *Http.Request, response *Http.Response) {
@@ -72,6 +79,10 @@ func (a *App) GetServer() Server2.IServer {
 
 func (a *App) GetRouter() Routing.IRouter {
 	return a.router
+}
+
+func (a *App) GetLogger() Log.ILog {
+	return a.log
 }
 
 func (a *App) GetExceptionHandler() Debug.IExceptionHandler {

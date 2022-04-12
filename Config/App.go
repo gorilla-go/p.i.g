@@ -4,8 +4,9 @@ package Config
 func App() map[string]interface{} {
 	return map[string]interface{}{
 		// server.
-		"port":  8084,
-		"debug": true,
+		"port":    8084,
+		"debug":   true,
+		"logPath": "Log/",
 
 		// session.
 		"sessionExpire": 60 * 60 * 24,

@@ -11,7 +11,7 @@ type Index struct {
 
 func (t *Index) Index(request *Http.Request, response *Http.Response) {
 	response.Redirect(
-		t.GetRouter().Url(t, "Name", map[string]string{"name": "name"}),
+		t.GetRouter().Url(t, "Name", map[string]string{"name": "a"}),
 		301,
 	)
 }
