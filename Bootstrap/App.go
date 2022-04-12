@@ -63,6 +63,7 @@ func (a *App) Initializer(server Server2.IServer) {
 	// set log server
 	a.container.AddBinding((*Log.ILog)(nil), Container2.NewBindingImpl(&Log2.Log{}))
 	a.log = a.container.GetSingletonByAbstract((*Log.ILog)(nil)).(Log.ILog)
+	a.log.StartLogManager()
 }
 
 func (a *App) Handle(request *Http.Request, response *Http.Response) {

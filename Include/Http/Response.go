@@ -3,14 +3,17 @@ package Http
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"php-in-go/Include/Foundation/Util"
+	"strconv"
 )
 
 type Response struct {
 	Code           int
 	responseWriter http.ResponseWriter
 	RuntimeStack   string
+	ErrorMessage   string
 }
 
 func BuildResponse(responseWriter http.ResponseWriter) *Response {
@@ -85,6 +88,24 @@ func (r *Response) EchoWithCode(i interface{}, code int) {
 	r.SetHeader("content-type", "text/plain; charset=utf-8")
 	r.SetCode(code)
 	r.write(fmt.Sprintf("%v", i))
+}
+
+func (r *Response) Download(file string, name string) {
+	if Util.IsFile(file) == false {
+		panic("Invalid file path: " + file)
+	}
+	fileBytes, err := ioutil.ReadFile(file)
+	if err != nil {
+		panic(err)
+	}
+	r.SetHeader("Content-type", "application/octet-stream")
+	r.SetHeader("Accept-Ranges", "bytes")
+	r.SetHeader("Accept-Length", strconv.Itoa(len(fileBytes)))
+	r.SetHeader("Content-Disposition", "attachment; filename="+name)
+	_, err = r.responseWriter.Write(fileBytes)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (r *Response) Redirect(url string, code int) {

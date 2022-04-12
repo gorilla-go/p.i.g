@@ -9,3 +9,199 @@
 2022-04-12 11:14:29 [200] GET /name/get_name.html?q=1
 2022-04-12 11:15:47 [301] GET /
 2022-04-12 11:15:47 [200] GET /a/get_name.html
+2022-04-12 11:33:28 [200] GET /a/get_name.html
+ 
+2022-04-12 11:33:39 [500] GET /
+ goroutine 7 [running]:
+php-in-go/Include/Foundation/Http.(*Kernel).Handle.func1()
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Kernel.go:49 +0xcf
+panic({0x12a4740, 0x13479e0})
+	/usr/local/opt/go/libexec/src/runtime/panic.go:1038 +0x215
+php-in-go/App/Http/Controller.(*Index).Index(0xc00007c050, 0x0, 0x0)
+	/Users/yehua/Desktop/program/开源/PhpInGo/App/Http/Controller/Index.go:14 +0x3c
+reflect.Value.call({0x12b2d40, 0xc00007c050, 0x30}, {0x12e4adb, 0x4}, {0xc00011a630, 0x2, 0x18})
+	/usr/local/opt/go/libexec/src/reflect/value.go:543 +0x814
+reflect.Value.Call({0x12b2d40, 0xc00007c050, 0x0}, {0xc00011a630, 0x2, 0x2})
+	/usr/local/opt/go/libexec/src/reflect/value.go:339 +0xc5
+php-in-go/Include/Foundation/Http.(*Kernel).dispatch(0xc00019a1b0, 0xc0000660c0, 0xc00011a360, 0x30)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Kernel.go:130 +0x408
+php-in-go/Include/Foundation/Http.(*Kernel).Handle(0xc00019a1b0, 0xc000012120, 0xc00011a360)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Kernel.go:81 +0x1f0
+php-in-go/Bootstrap.(*App).Handle(0x13497c0, 0xc00012a040, 0xc00005da30)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Bootstrap/App.go:69 +0x22
+php-in-go/Include/Foundation/Server.(*HttpServer).Start.func1({0x134f650, 0xc00012a000}, 0xc000120200)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Server/HttpServer.go:43 +0x34e
+net/http.HandlerFunc.ServeHTTP(0x0, {0x134f650, 0xc00012a000}, 0x0)
+	/usr/local/opt/go/libexec/src/net/http/server.go:2046 +0x2f
+net/http.(*ServeMux).ServeHTTP(0x0, {0x134f650, 0xc00012a000}, 0xc000120200)
+	/usr/local/opt/go/libexec/src/net/http/server.go:2424 +0x149
+net/http.serverHandler.ServeHTTP({0xc00011a270}, {0x134f650, 0xc00012a000}, 0xc000120200)
+	/usr/local/opt/go/libexec/src/net/http/server.go:2878 +0x43b
+net/http.(*conn).serve(0xc00011c140, {0x1350800, 0xc0001850b0})
+	/usr/local/opt/go/libexec/src/net/http/server.go:1929 +0xb08
+created by net/http.(*Server).Serve
+	/usr/local/opt/go/libexec/src/net/http/server.g
+2022-04-12 11:34:30 [500] GET /
+ goroutine 7 [running]:
+php-in-go/Include/Foundation/Http.(*Kernel).Handle.func1()
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Kernel.go:49 +0xcf
+panic({0x12a4740, 0x13479e0})
+	/usr/local/opt/go/libexec/src/runtime/panic.go:1038 +0x215
+php-in-go/App/Http/Controller.(*Index).Index(0xc0000c0000, 0x0, 0x0)
+	/Users/yehua/Desktop/program/开源/PhpInGo/App/Http/Controller/Index.go:14 +0x3c
+reflect.Value.call({0x12b2d40, 0xc0000c0000, 0x30}, {0x12e4adb, 0x4}, {0xc0000a62d0, 0x2, 0x18})
+	/usr/local/opt/go/libexec/src/reflect/value.go:543 +0x814
+reflect.Value.Call({0x12b2d40, 0xc0000c0000, 0x0}, {0xc0000a62d0, 0x2, 0x2})
+	/usr/local/opt/go/libexec/src/reflect/value.go:339 +0xc5
+php-in-go/Include/Foundation/Http.(*Kernel).dispatch(0xc00019a1b0, 0xc0000bc040, 0xc0000a6060, 0x30)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Kernel.go:130 +0x408
+php-in-go/Include/Foundation/Http.(*Kernel).Handle(0xc00019a1b0, 0xc0000900e0, 0xc0000a6060)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Kernel.go:81 +0x1f0
+php-in-go/Bootstrap.(*App).Handle(0x13497c0, 0xc0000b0040, 0xc0001a3a30)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Bootstrap/App.go:69 +0x22
+php-in-go/Include/Foundation/Server.(*HttpServer).Start.func1({0x134f650, 0xc0000b0000}, 0xc000120400)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Server/HttpServer.go:43 +0x34e
+net/http.HandlerFunc.ServeHTTP(0x0, {0x134f650, 0xc0000b0000}, 0x0)
+	/usr/local/opt/go/libexec/src/net/http/server.go:2046 +0x2f
+net/http.(*ServeMux).ServeHTTP(0x0, {0x134f650, 0xc0000b0000}, 0xc000120400)
+	/usr/local/opt/go/libexec/src/net/http/server.go:2424 +0x149
+net/http.serverHandler.ServeHTTP({0xc00011a270}, {0x134f650, 0xc0000b0000}, 0xc000120400)
+	/usr/local/opt/go/libexec/src/net/http/server.go:2878 +0x43b
+net/http.(*conn).serve(0xc00011c140, {0x1350800, 0xc0001850b0})
+	/usr/local/opt/go/libexec/src/net/http/server.go:1929 +0xb08
+created by net/http.(*Server).Serve
+	/usr/local/opt/go/libexec/src/net/http/server.g
+2022-04-12 11:34:58 [500] GET /
+ goroutine 20 [running]:
+php-in-go/Include/Foundation/Http.(*Kernel).Handle.func1()
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Kernel.go:49 +0xcf
+panic({0x12a4740, 0x13479e0})
+	/usr/local/opt/go/libexec/src/runtime/panic.go:1038 +0x215
+php-in-go/App/Http/Controller.(*Index).Index(0xc0000c6460, 0x0, 0x0)
+	/Users/yehua/Desktop/program/开源/PhpInGo/App/Http/Controller/Index.go:14 +0x3c
+reflect.Value.call({0x12b2d40, 0xc0000c6460, 0x30}, {0x12e4adb, 0x4}, {0xc00009d710, 0x2, 0x18})
+	/usr/local/opt/go/libexec/src/reflect/value.go:543 +0x814
+reflect.Value.Call({0x12b2d40, 0xc0000c6460, 0x0}, {0xc00009d710, 0x2, 0x2})
+	/usr/local/opt/go/libexec/src/reflect/value.go:339 +0xc5
+php-in-go/Include/Foundation/Http.(*Kernel).dispatch(0xc0000b01b0, 0xc0000c41e0, 0xc00009d3b0, 0x30)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Kernel.go:130 +0x408
+php-in-go/Include/Foundation/Http.(*Kernel).Handle(0xc0000b01b0, 0xc000098d80, 0xc00009d3b0)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Kernel.go:81 +0x1f0
+php-in-go/Bootstrap.(*App).Handle(0x13497c0, 0xc000100120, 0xc000056a30)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Bootstrap/App.go:69 +0x22
+php-in-go/Include/Foundation/Server.(*HttpServer).Start.func1({0x134f650, 0xc0001000e0}, 0xc000108100)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Server/HttpServer.go:43 +0x34e
+net/http.HandlerFunc.ServeHTTP(0x0, {0x134f650, 0xc0001000e0}, 0x0)
+	/usr/local/opt/go/libexec/src/net/http/server.go:2046 +0x2f
+net/http.(*ServeMux).ServeHTTP(0x0, {0x134f650, 0xc0001000e0}, 0xc000108100)
+	/usr/local/opt/go/libexec/src/net/http/server.go:2424 +0x149
+net/http.serverHandler.ServeHTTP({0xc00009d2c0}, {0x134f650, 0xc0001000e0}, 0xc000108100)
+	/usr/local/opt/go/libexec/src/net/http/server.go:2878 +0x43b
+net/http.(*conn).serve(0xc0000b4b40, {0x1350800, 0xc00009d0b0})
+	/usr/local/opt/go/libexec/src/net/http/server.go:1929 +0xb08
+created by net/http.(*Server).Serve
+	/usr/local/opt/go/libexec/src/net/http/server.
+
+2022-04-12 11:34:59 [500] GET /
+ goroutine 20 [running]:
+php-in-go/Include/Foundation/Http.(*Kernel).Handle.func1()
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Kernel.go:49 +0xcf
+panic({0x12a4740, 0x13479e0})
+	/usr/local/opt/go/libexec/src/runtime/panic.go:1038 +0x215
+php-in-go/App/Http/Controller.(*Index).Index(0xc00007c050, 0x0, 0x0)
+	/Users/yehua/Desktop/program/开源/PhpInGo/App/Http/Controller/Index.go:14 +0x3c
+reflect.Value.call({0x12b2d40, 0xc00007c050, 0x30}, {0x12e4adb, 0x4}, {0xc00018e2d0, 0x2, 0x18})
+	/usr/local/opt/go/libexec/src/reflect/value.go:543 +0x814
+reflect.Value.Call({0x12b2d40, 0xc00007c050, 0x0}, {0xc00018e2d0, 0x2, 0x2})
+	/usr/local/opt/go/libexec/src/reflect/value.go:339 +0xc5
+php-in-go/Include/Foundation/Http.(*Kernel).dispatch(0xc0000b01b0, 0xc000066060, 0xc00018e060, 0x30)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Kernel.go:130 +0x408
+php-in-go/Include/Foundation/Http.(*Kernel).Handle(0xc0000b01b0, 0xc000012100, 0xc00018e060)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Kernel.go:81 +0x1f0
+php-in-go/Bootstrap.(*App).Handle(0x13497c0, 0xc000192040, 0xc00011ba30)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Bootstrap/App.go:69 +0x22
+php-in-go/Include/Foundation/Server.(*HttpServer).Start.func1({0x134f650, 0xc000192000}, 0xc000108300)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Server/HttpServer.go:43 +0x34e
+net/http.HandlerFunc.ServeHTTP(0x0, {0x134f650, 0xc000192000}, 0x0)
+	/usr/local/opt/go/libexec/src/net/http/server.go:2046 +0x2f
+net/http.(*ServeMux).ServeHTTP(0x0, {0x134f650, 0xc000192000}, 0xc000108300)
+	/usr/local/opt/go/libexec/src/net/http/server.go:2424 +0x149
+net/http.serverHandler.ServeHTTP({0xc00009d2c0}, {0x134f650, 0xc000192000}, 0xc000108300)
+	/usr/local/opt/go/libexec/src/net/http/server.go:2878 +0x43b
+net/http.(*conn).serve(0xc0000b4b40, {0x1350800, 0xc00009d0b0})
+	/usr/local/opt/go/libexec/src/net/http/server.go:1929 +0xb08
+created by net/http.(*Server).Serve
+	/usr/local/opt/go/libexec/src/net/http/server.
+
+2022-04-12 11:38:59 [200] GET /a/get_name.html
+ 
+
+2022-04-12 11:39:02 [301] GET /?q=1
+ 
+
+2022-04-12 11:40:32 [200] GET /a/get_name.html
+ 
+
+2022-04-12 11:40:39 [200] GET /a/get_name.html
+ 
+
+2022-04-12 11:40:43 [200] GET /a/get_name.html
+ 
+
+2022-04-12 11:40:44 [301] GET /?q=2
+ 
+
+2022-04-12 11:40:44 [200] GET /a/get_name.html
+ 
+
+2022-04-12 12:07:54 [200] GET /a/get_name.html
+ 
+
+2022-04-12 12:07:57 [200] GET /a/get_name.html
+ 
+
+2022-04-12 12:19:49 [200] GET /a/get_name.html
+ 
+
+2022-04-12 12:19:56 [0] GET /
+ 
+
+2022-04-12 12:21:37 [500] GET /?q=33
+ goroutine 19 [running]:
+php-in-go/Include/Foundation/Http.(*Kernel).Handle.func1()
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Kernel.go:49 +0xcf
+panic({0x1291580, 0xc000110e50})
+	/usr/local/opt/go/libexec/src/runtime/panic.go:1038 +0x215
+php-in-go/Include/Http.(*Response).Download(0xc000115350, {0xc000150680, 0x33}, {0x12e5617, 0x7})
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Http/Response.go:94 +0x18b
+php-in-go/App/Http/Controller.(*Index).Index(0xc00013e460, 0x0, 0x0)
+	/Users/yehua/Desktop/program/开源/PhpInGo/App/Http/Controller/Index.go:13 +0x89
+reflect.Value.call({0x12babc0, 0xc00013e460, 0x30}, {0x12e4bda, 0x4}, {0xc0001156b0, 0x2, 0x18})
+	/usr/local/opt/go/libexec/src/reflect/value.go:543 +0x814
+reflect.Value.Call({0x12babc0, 0xc00013e460, 0x0}, {0xc0001156b0, 0x2, 0x2})
+	/usr/local/opt/go/libexec/src/reflect/value.go:339 +0xc5
+php-in-go/Include/Foundation/Http.(*Kernel).dispatch(0xc0001281b0, 0xc00013c200, 0xc000115350, 0x30)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Kernel.go:130 +0x408
+php-in-go/Include/Foundation/Http.(*Kernel).Handle(0xc0001281b0, 0xc000110d70, 0xc000115350)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Kernel.go:81 +0x1f0
+php-in-go/Bootstrap.(*App).Handle(0x1349940, 0xc000178120, 0xc000092a30)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Bootstrap/App.go:70 +0x22
+php-in-go/Include/Foundation/Server.(*HttpServer).Start.func1({0x134f7d0, 0xc0001780e0}, 0xc000180100)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Server/HttpServer.go:43 +0x34e
+net/http.HandlerFunc.ServeHTTP(0x0, {0x134f7d0, 0xc0001780e0}, 0x0)
+	/usr/local/opt/go/libexec/src/net/http/server.go:2046 +0x2f
+net/http.(*ServeMux).ServeHTTP(0xc000142096, {0x134f7d0, 0xc0001780e0}, 0xc000180100)
+	/usr/local/opt/go/libexec/src/net/http/server.go:2424 +0x149
+net/http.serverHandler.ServeHTTP({0xc000098030}, {0x134f7d0, 0xc0001780e0}, 0xc000180100)
+	/usr/local/opt/go/libexec/src/net/http/server.go:2878 +0x43b
+net/http.(*conn).se
+
+2022-04-12 12:22:33 [0] GET /?q=33
+ 
+
+2022-04-12 12:26:37 [0] GET /?q=77
+ 
+
+2022-04-12 12:30:01 [0] GET /?q=33
+ 
+ 

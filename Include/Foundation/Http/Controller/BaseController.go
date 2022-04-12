@@ -2,6 +2,7 @@ package Controller
 
 import (
 	"net/http"
+	"os"
 	"php-in-go/Include/Contracts/Cache"
 	"php-in-go/Include/Contracts/Container"
 	Http2 "php-in-go/Include/Contracts/Http"
@@ -27,4 +28,13 @@ func (c *BaseController) NoFound() {
 // GetRouter get router.
 func (c *BaseController) GetRouter() Routing.IRouter {
 	return c.App.GetRouter()
+}
+
+// GetRoot get root file path
+func (c *BaseController) GetRoot() string {
+	root, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	return root + "/"
 }

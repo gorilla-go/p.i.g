@@ -57,10 +57,11 @@ func (k *Kernel) Handle(request *Http.Request, response *Http.Response) {
 
 			// set runtime exception stack
 			response.RuntimeStack = string(v)
+			response.ErrorMessage = fmt.Sprintf("%v", err)
 		}
 
 		// logger.
-		go k.app.GetLogger().Log(request, response)
+		k.app.GetLogger().Log(request, response)
 	}()
 
 	// init request container

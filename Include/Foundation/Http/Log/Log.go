@@ -12,13 +12,22 @@ import (
 type Log struct {
 }
 
+func (l *Log) StartLogManager() {
+
+}
+
+func (l *Log) CloseLogManager() {
+
+}
+
 func (l *Log) Log(request *Http.Request, response *Http.Response) {
 	fmt.Printf(
-		"%s [%d] %s %s\n",
+		"%s [%d] %s %s  %s\n",
 		time.Now().Format("2006-01-02 15:04:05"),
 		response.Code,
 		request.Method,
 		request.RequestURI,
+		response.ErrorMessage,
 	)
 	filePrefix := time.Now().Format("0601")
 	config := Config.App()
@@ -49,11 +58,13 @@ func (l *Log) Log(request *Http.Request, response *Http.Response) {
 		}
 	}()
 	s := fmt.Sprintf(
-		"%s [%d] %s %s\n",
+		"%s [%d] %s %s\n %s\n %s\n",
 		time.Now().Format("2006-01-02 15:04:05"),
 		response.Code,
 		request.Method,
 		request.RequestURI,
+		response.ErrorMessage,
+		response.RuntimeStack,
 	)
 	_, err = f.Write([]byte(s))
 	if err != nil {
