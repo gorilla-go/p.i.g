@@ -102,43 +102,48 @@ func (c *Container) getConcrete(abstract string) *reflect.Value {
 	return nil
 }
 
-func (c *Container) Resolve(abstract interface{}, params map[string]interface{}, new bool) (r interface{}) {
-	c.fireBeforeResolvingCallbacks(&abstract, &params)
-
+func (c *Container) Resolve(abstract interface{}, params map[string]interface{}, new bool) interface{} {
 	// get reflection value.
 	refType := reflect.TypeOf(abstract)
-	originRefType := refType
-
-	// is ptr
-	if refType.Kind() == reflect.Ptr {
-		refType = refType.Elem()
-	}
 
 	switch refType.Kind() {
 
 	// interface ?
 	case reflect.Interface:
-		r = c.resolveAbstract(
+		return c.resolveAbstract(
 			refType,
 			params,
 			new,
 		)
-		break
 	// struct
 	case reflect.Struct:
-		r = c.build(abstract, params, new)
-		break
+		return c.build(abstract, params, new)
 	case reflect.Func:
-		r = c.callFunc(abstract, params, new)
+		return c.callFunc(abstract, params, new)
+	case reflect.Ptr:
+		// cache from singleton.
+		if new == false {
+			cache := c.GetSingleton(abstract)
+			if cache != nil {
+				return cache
+			}
+		}
+
+		// real-time resolve
+		d := reflect.ValueOf(abstract)
+		if d.Elem().IsValid() == false || d.Elem().CanSet() == false {
+			return abstract
+		}
+		o := c.Resolve(
+			d.Elem().Interface(),
+			params,
+			new,
+		)
+		d.Elem().Set(reflect.ValueOf(o))
+		return d.Interface()
 	default:
-		r = reflect.New(originRefType).Elem()
-		break
+		return reflect.New(refType).Elem().Interface()
 	}
-
-	// after resolving callback
-	c.fireAfterResolvingCallbacks(&r, abstract)
-
-	return
 }
 
 // callFunc resolve function and call with params.
@@ -162,7 +167,7 @@ func (c *Container) callFunc(abstract interface{}, params map[string]interface{}
 	paramsNum := targetMethod.Type().NumIn()
 
 	for i := 0; i < paramsNum; i++ {
-		if len(paramValues) < i {
+		if len(paramValues) > i {
 			paramsArr = append(paramsArr, paramValues[i])
 			continue
 		}
@@ -223,7 +228,7 @@ func (c *Container) resolveAbstract(abstract reflect.Type, params map[string]int
 func (c *Container) build(object interface{}, params map[string]interface{}, new bool) interface{} {
 	// search from cache
 	cacheValue := c.GetSingleton(object)
-	if cacheValue != nil || new == false {
+	if cacheValue != nil && new == false {
 		return cacheValue
 	}
 
@@ -232,34 +237,29 @@ func (c *Container) build(object interface{}, params map[string]interface{}, new
 
 	// get reflection type for next.
 	reflectionType := reflect.TypeOf(object)
-	// get reflect type and value
-	var refValue reflect.Value
-
-	isPtr := false
-	if reflectionType.Kind() == reflect.Ptr {
-		isPtr = true
-		reflectionType = reflectionType.Elem()
-	}
 
 	// re-construct struct for memory
-	refValue = reflect.New(reflectionType).Elem()
+	refValue := reflect.New(reflectionType).Elem()
 
 	for i := 0; i < refValue.NumField(); i++ {
 		// get current field struct map.
 		fieldStruct := refValue.Type().Field(i)
 
+		fieldValue := refValue.Field(i)
+
 		// is exported?
-		if fieldStruct.IsExported() == false {
+		if fieldStruct.IsExported() == false || fieldValue.CanSet() == false {
 			continue
 		}
-		fieldName := GetPackageClassNameByRef(fieldStruct.Type)
 
-		// check field, ptr? to elem.
-		var fieldValue reflect.Value
-		if refValue.Kind() == reflect.Ptr {
-			fieldValue = refValue.Elem().Field(i)
-		} else {
-			fieldValue = refValue.Field(i)
+		// is ptr? to elem.
+		if fieldValue.Kind() == reflect.Ptr {
+			fieldValue.Set(
+				reflect.ValueOf(
+					c.Resolve(fieldValue.Interface(), nil, new),
+				),
+			)
+			continue
 		}
 
 		// solve from params
@@ -271,6 +271,7 @@ func (c *Container) build(object interface{}, params map[string]interface{}, new
 		}
 
 		// contextual inject.
+		fieldName := GetPackageClassNameByRef(fieldStruct.Type)
 		if cacheInjectObj, exist := c.contextual[packageName][fieldName]; exist {
 			fieldValue.Set(reflect.ValueOf(cacheInjectObj))
 			continue
@@ -279,50 +280,37 @@ func (c *Container) build(object interface{}, params map[string]interface{}, new
 		// get type from current fieldStruct
 		fieldType := fieldStruct.Type
 
-		// is ptr? to elem.
-		if fieldType.Kind() == reflect.Ptr {
-			fieldType = fieldType.Elem()
-		}
-
 		// solve from container
 		switch fieldType.Kind() {
 		case reflect.Interface:
-			if fieldValue.CanSet() == true {
-				// search interface binding from storage.
-				cacheImplValue := c.getConcrete(GetPackageClassNameByRef(fieldType))
-				if cacheImplValue != nil {
-					fieldValue.Set(*cacheImplValue)
-					continue
-				}
+			// search interface binding from storage.
+			cacheImplValue := c.getConcrete(GetPackageClassNameByRef(fieldType))
+			if cacheImplValue != nil {
+				fieldValue.Set(*cacheImplValue)
+				continue
+			}
 
-				// set field value
-				fieldValue.Set(reflect.ValueOf(
-					c.resolveAbstract(
-						fieldType,
+			// set field value
+			fieldValue.Set(reflect.ValueOf(
+				c.resolveAbstract(
+					fieldType,
+					nil,
+					new,
+				),
+			))
+			break
+		case reflect.Struct:
+			// build in-time
+			fieldValue.Set(
+				reflect.ValueOf(
+					c.build(
+						fieldValue.Interface(),
 						nil,
 						new,
 					),
-				))
-			}
-			break
-		case reflect.Struct:
-			if fieldValue.CanSet() == true {
-				// build in-time
-				fieldValue.Set(
-					reflect.ValueOf(
-						c.build(
-							fieldValue.Interface(),
-							nil,
-							new,
-						),
-					),
-				)
-			}
+				),
+			)
 		}
-	}
-
-	if isPtr {
-		return refValue.Addr().Interface()
 	}
 
 	// cache

@@ -38,3 +38,8 @@ func (c *BaseController) GetRoot() string {
 	}
 	return root + "/"
 }
+
+// Resolve receive object from container.
+func (c *BaseController) Resolve(abstract interface{}) interface{} {
+	return c.Container.Resolve(abstract, nil, false)
+}

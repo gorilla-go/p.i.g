@@ -17,7 +17,10 @@ type Response struct {
 }
 
 func BuildResponse(responseWriter http.ResponseWriter) *Response {
-	return &Response{responseWriter: responseWriter}
+	return &Response{
+		responseWriter: responseWriter,
+		Code:           200,
+	}
 }
 
 func (r *Response) SetCode(code int) *Response {
