@@ -3,9 +3,7 @@ package Bootstrap
 import (
 	"php-in-go/App/Exception"
 	"php-in-go/Config"
-	Container2 "php-in-go/Include/Container"
 	"php-in-go/Include/Contracts/Cache"
-	"php-in-go/Include/Contracts/Container"
 	"php-in-go/Include/Contracts/Debug"
 	Http2 "php-in-go/Include/Contracts/Http"
 	"php-in-go/Include/Contracts/Http/Log"
@@ -22,7 +20,6 @@ import (
 )
 
 type App struct {
-	container        Container.IContainer
 	server           Server2.IServer
 	router           Routing.IRouter
 	exceptionHandler Debug.IExceptionHandler
@@ -33,45 +30,35 @@ type App struct {
 }
 
 func (a *App) Initializer(server Server2.IServer) {
+	// set server.
 	a.server = server
-	a.container = server.(Container.IContainerAvailable).GetContainer()
 
-	// set http kernel route
-	a.container.AddBinding((*Routing.IRouter)(nil), Container2.NewBindingImpl(&Routing2.Router{}))
-	a.router = a.container.GetSingletonByAbstract((*Routing.IRouter)(nil)).(Routing.IRouter)
+	// set http kernel route.
+	a.router = &Routing2.Router{}
 	a.router.Initializer(Routes.Route(), Config.Route())
 
-	// set http exception handler
-	a.container.AddBinding((*Debug.IExceptionHandler)(nil), Container2.NewBindingImpl(&Exception.Handler{}))
-	a.exceptionHandler = a.container.GetSingletonByAbstract((*Debug.IExceptionHandler)(nil)).(Debug.IExceptionHandler)
-
-	// set http kernel
-	a.container.AddBinding((*Http2.IKernel)(nil), Container2.NewBindingImpl(&Http4.Kernel{}))
-	a.kernel = a.container.GetSingletonByAbstract((*Http2.IKernel)(nil)).(Http2.IKernel)
-	a.kernel.Bootstrap(a)
+	// set http exception handler.
+	a.exceptionHandler = &Exception.Handler{}
 
 	// cache.
-	a.container.AddBinding((*Cache.ICache)(nil), Container2.NewBindingImpl(&Cache2.MemoryCache{}))
-	a.cache = a.container.GetSingletonByAbstract((*Cache.ICache)(nil)).(Cache.ICache)
+	a.cache = &Cache2.MemoryCache{}
 	a.cache.StartCacheManager()
 
 	// set session driver.
-	a.container.AddBinding((*Session.ISession)(nil), Container2.NewBindingImpl(&Session2.Session{}))
-	a.session = a.container.GetSingletonByAbstract((*Session.ISession)(nil)).(Session.ISession)
+	a.session = &Session2.Session{}
 	a.session.StartSessionManager(a.cache)
 
-	// set log server
-	a.container.AddBinding((*Log.ILog)(nil), Container2.NewBindingImpl(&Log2.Log{}))
-	a.log = a.container.GetSingletonByAbstract((*Log.ILog)(nil)).(Log.ILog)
+	// set log server.
+	a.log = &Log2.Log{}
 	a.log.StartLogManager()
+
+	// set http kernel.
+	a.kernel = &Http4.Kernel{}
+	a.kernel.Bootstrap(a)
 }
 
 func (a *App) Handle(request *Http.Request, response *Http.Response) {
 	a.kernel.Handle(request, response)
-}
-
-func (a *App) GetContainer() Container.IContainer {
-	return a.container
 }
 
 func (a *App) GetServer() Server2.IServer {
@@ -84,6 +71,14 @@ func (a *App) GetRouter() Routing.IRouter {
 
 func (a *App) GetLogger() Log.ILog {
 	return a.log
+}
+
+func (a *App) GetSession() Session.ISession {
+	return a.session
+}
+
+func (a *App) GetCache() Cache.ICache {
+	return a.cache
 }
 
 func (a *App) GetExceptionHandler() Debug.IExceptionHandler {

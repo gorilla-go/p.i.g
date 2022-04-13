@@ -25,9 +25,8 @@ func main() {
 
 	// init http server.
 	httpServer.Initializer(Config.HttpServer{
-		BasePath:  basePath,
-		Port:      appConfig["port"].(int),
-		Container: container,
+		BasePath: basePath,
+		Port:     appConfig["port"].(int),
 	})
 
 	// start to listen.

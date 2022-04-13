@@ -2,6 +2,7 @@ package Container
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 )
 
@@ -117,18 +118,26 @@ func (c *Container) Resolve(abstract interface{}, params map[string]interface{},
 		)
 	// struct
 	case reflect.Struct:
-		return c.build(abstract, params, new)
-	case reflect.Func:
-		return c.callFunc(abstract, params, new)
-	case reflect.Ptr:
-		// cache from singleton.
-		if new == false {
-			cache := c.GetSingleton(abstract)
-			if cache != nil {
-				return cache
-			}
+		// search from cache
+		cacheValue := c.GetSingleton(abstract)
+		if cacheValue != nil && new == false {
+			return cacheValue
 		}
-
+		r := c.build(abstract, params, false)
+		// cache
+		fmt.Println("----")
+		fmt.Println(abstract)
+		fmt.Println(r)
+		c.Singleton(r, "")
+		return r
+	case reflect.Func:
+		return c.callFunc(abstract, params, false)
+	case reflect.Ptr:
+		// search from cache
+		cacheValue := c.GetSingleton(abstract)
+		if cacheValue != nil && new == false {
+			return cacheValue
+		}
 		// real-time resolve
 		d := reflect.ValueOf(abstract)
 		if d.Elem().IsValid() == false || d.Elem().CanSet() == false {
@@ -137,17 +146,20 @@ func (c *Container) Resolve(abstract interface{}, params map[string]interface{},
 		o := c.Resolve(
 			d.Elem().Interface(),
 			params,
-			new,
+			false,
 		)
 		d.Elem().Set(reflect.ValueOf(o))
-		return d.Interface()
+		r := d.Interface()
+		// cache
+		c.Singleton(r, "")
+		return r
 	default:
-		return reflect.New(refType).Elem().Interface()
+		return abstract
 	}
 }
 
 // callFunc resolve function and call with params.
-func (c *Container) callFunc(abstract interface{}, params map[string]interface{}, new bool) interface{} {
+func (c *Container) callFunc(abstract interface{}, params map[string]interface{}, new bool) []reflect.Value {
 	// resolve target method
 	targetMethod := reflect.ValueOf(abstract)
 
@@ -177,7 +189,13 @@ func (c *Container) callFunc(abstract interface{}, params map[string]interface{}
 
 		// is interface?
 		if paramItemType.Kind() == reflect.Interface {
-			paramItemType = reflect.PtrTo(paramItemType)
+			paramsArr = append(
+				paramsArr,
+				reflect.ValueOf(
+					c.resolveAbstract(paramItemType, nil, new),
+				),
+			)
+			continue
 		}
 
 		// append to params arr.
@@ -211,7 +229,7 @@ func (c *Container) resolveAbstract(abstract reflect.Type, params map[string]int
 	}
 
 	// build object
-	object := c.build((*concrete).Interface(), params, new)
+	object := c.Resolve((*concrete).Interface(), params, new)
 
 	// cache build result for next.
 	c.singletonAliasAbstract[packagePath] = object
@@ -226,12 +244,6 @@ func (c *Container) resolveAbstract(abstract reflect.Type, params map[string]int
 
 // build  resolve params inject.
 func (c *Container) build(object interface{}, params map[string]interface{}, new bool) interface{} {
-	// search from cache
-	cacheValue := c.GetSingleton(object)
-	if cacheValue != nil && new == false {
-		return cacheValue
-	}
-
 	// get scene class name.
 	packageName := GetPackageClassName(object)
 
@@ -252,13 +264,8 @@ func (c *Container) build(object interface{}, params map[string]interface{}, new
 			continue
 		}
 
-		// is ptr? to elem.
-		if fieldValue.Kind() == reflect.Ptr {
-			fieldValue.Set(
-				reflect.ValueOf(
-					c.Resolve(fieldValue.Interface(), nil, new),
-				),
-			)
+		// inject tag
+		if fieldStruct.Tag.Get("inject") == "false" {
 			continue
 		}
 
@@ -277,43 +284,30 @@ func (c *Container) build(object interface{}, params map[string]interface{}, new
 			continue
 		}
 
-		// get type from current fieldStruct
-		fieldType := fieldStruct.Type
-
-		// solve from container
-		switch fieldType.Kind() {
-		case reflect.Interface:
-			// search interface binding from storage.
-			cacheImplValue := c.getConcrete(GetPackageClassNameByRef(fieldType))
-			if cacheImplValue != nil {
-				fieldValue.Set(*cacheImplValue)
-				continue
-			}
-
-			// set field value
-			fieldValue.Set(reflect.ValueOf(
-				c.resolveAbstract(
-					fieldType,
-					nil,
-					new,
-				),
-			))
-			break
-		case reflect.Struct:
-			// build in-time
+		if fieldValue.Type().Kind() == reflect.Interface {
 			fieldValue.Set(
 				reflect.ValueOf(
-					c.build(
-						fieldValue.Interface(),
+					c.resolveAbstract(
+						fieldValue.Type(),
 						nil,
 						new,
 					),
 				),
 			)
+			continue
 		}
+
+		// build in-time
+		fieldValue.Set(
+			reflect.ValueOf(
+				c.Resolve(
+					fieldValue.Interface(),
+					nil,
+					new,
+				),
+			),
+		)
 	}
 
-	// cache
-	c.Singleton(refValue.Interface(), "")
 	return refValue.Interface()
 }

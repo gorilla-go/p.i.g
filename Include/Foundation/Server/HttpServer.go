@@ -4,34 +4,24 @@ import (
 	"fmt"
 	"net/http"
 	"php-in-go/Bootstrap"
-	Container2 "php-in-go/Include/Container"
-	"php-in-go/Include/Contracts/Container"
 	"php-in-go/Include/Contracts/Http"
 	"php-in-go/Include/Foundation/Config"
 	Http2 "php-in-go/Include/Http"
 )
 
 type HttpServer struct {
-	port       int
-	bashPath   string
-	app        Http.IApp
-	container  Container.IContainer
-	sessionKey string
+	port     int
+	bashPath string
+	app      Http.IApp
 }
 
 func (s *HttpServer) Initializer(config Config.HttpServer) {
 	// set http server config
 	s.port = config.Port
 	s.bashPath = config.BasePath
-	s.container = config.Container
 
 	// set http kernel
-	s.container.AddBinding((*Http.IApp)(nil), Container2.NewBindingImpl(&Bootstrap.App{}))
-	s.app = s.container.GetSingletonByAbstract((*Http.IApp)(nil)).(Http.IApp)
-}
-
-func (s *HttpServer) GetContainer() Container.IContainer {
-	return s.container
+	s.app = &Bootstrap.App{}
 }
 
 func (s *HttpServer) Start() {
@@ -40,6 +30,7 @@ func (s *HttpServer) Start() {
 
 	// start server.
 	http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
+		// start to dispatch.
 		s.app.Handle(Http2.BuildRequest(request), Http2.BuildResponse(writer))
 	})
 
