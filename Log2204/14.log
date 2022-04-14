@@ -318,3 +318,124 @@ php-in-go/Bootstrap.(*App).Handle(0xc000115b70, 0x123d945, 0x1349940)
 2022-04-14 14:56:51 [200] GET /
  
  
+2022-04-14 15:52:42 [200] GET /
+ 
+ 
+2022-04-14 15:53:08 [500] GET /
+ runtime error: invalid memory address or nil pointer dereference
+ goroutine 7 [running]:
+php-in-go/Include/Foundation/Http.(*Kernel).Handle.func1()
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Kernel.go:37 +0x8c
+panic({0x12a4760, 0x152c140})
+	/usr/local/opt/go/libexec/src/runtime/panic.go:1038 +0x215
+php-in-go/Include/Foundation/Http/Session.(*Session).getClientKey(0x12a2ea0, 0xc0000ca000, 0x12e712c)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Session/Session.go:46 +0x98
+php-in-go/Include/Foundation/Http/Session.(*Session).SetSession(0xc000012cf0, {0x12e47b6, 0x1}, {0x12915c0, 0xc0000aa120}, 0xc0000ca000, 0x2)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Session/Session.go:35 +0x9c
+php-in-go/Include/Foundation/Http/Controller.(*BaseController).SetSession(0xc000108cf0, {0x12e47b6, 0x1}, {0x12e47b7, 0x1})
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Controller/BaseController.go:38 +0x8f
+php-in-go/App/Http/Controller.(*Index).Index(0xc0000da790, 0x10b98fd)
+	/Users/yehua/Desktop/program/开源/PhpInGo/App/Http/Controller/Index.go:13 +0x31
+reflect.Value.call({0x12904c0, 0xc0000a81c0, 0x18}, {0x12e4a85, 0x4}, {0xc0000ca060, 0x1, 0x0})
+	/usr/local/opt/go/libexec/src/reflect/value.go:543 +0x814
+reflect.Value.Call({0x12904c0, 0xc0000a81c0, 0x0}, {0xc0000ca060, 0x1, 0x1})
+	/usr/local/opt/go/libexec/src/reflect/value.go:339 +0xc5
+php-in-go/Include/Container.(*Container).callFunc(0x0, {0x12904c0, 0xc0000a81c0}, 0x0, 0x0)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Container/Container.go:199 +0x79e
+php-in-go/Include/Container.(*Container).Resolve(0xc000098270, {0x12904c0, 0xc0000a81c0}, 0x12e4cf9, 0x1)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Container/Container.go:122 +0x10b
+php-in-go/Include/Foundation/Http.(*Kernel).dispatch(0xc000066140, 0xc00009c060, 0xc0000a8180, 0xc00010f9c0, {0x13532c0, 0xc000098270})
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Kernel.go:99 +0x168
+php-in-go/Include/Foundation/Http.(*Kernel).Handle(0xc00000e168, 0xc0000ca000, 
+2022-04-14 15:56:22 [200] GET /
+ 
+ 
+2022-04-14 15:56:30 [500] GET /name
+ runtime error: invalid memory address or nil pointer dereference
+ goroutine 20 [running]:
+php-in-go/Include/Foundation/Http.(*Kernel).Handle.func1()
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Kernel.go:37 +0x8c
+panic({0x12a4760, 0x152c140})
+	/usr/local/opt/go/libexec/src/runtime/panic.go:1038 +0x215
+php-in-go/Include/Foundation/Http/Session.(*Session).GetSession(0xc000098cd0, {0x12e47b6, 0x1}, 0xc0000a63f0, 0x2)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Session/Session.go:27 +0x98
+php-in-go/Include/Foundation/Http/Controller.(*BaseController).GetSession(0xc00009cd20, {0x12e47b6, 0x1})
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Controller/BaseController.go:42 +0x56
+php-in-go/App/Http/Controller.(*Index).Name(0xc00019a790, 0x10b98fd)
+	/Users/yehua/Desktop/program/开源/PhpInGo/App/Http/Controller/Index.go:17 +0x2c
+reflect.Value.call({0x12904c0, 0xc0000721c0, 0x18}, {0x12e4a85, 0x4}, {0xc00000e030, 0x1, 0x0})
+	/usr/local/opt/go/libexec/src/reflect/value.go:543 +0x814
+reflect.Value.Call({0x12904c0, 0xc0000721c0, 0x0}, {0xc00000e030, 0x1, 0x1})
+	/usr/local/opt/go/libexec/src/reflect/value.go:339 +0xc5
+php-in-go/Include/Container.(*Container).callFunc(0x0, {0x12904c0, 0xc0000721c0}, 0x0, 0x0)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Container/Container.go:199 +0x79e
+php-in-go/Include/Container.(*Container).Resolve(0xc000200240, {0x12904c0, 0xc0000721c0}, 0x12e4ac9, 0x1)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Container/Container.go:122 +0x10b
+php-in-go/Include/Foundation/Http.(*Kernel).dispatch(0xc0000c4120, 0xc0000660a0, 0xc000072180, 0xc00019b9c0, {0x13532e0, 0xc000200240})
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Kernel.go:99 +0x168
+php-in-go/Include/Foundation/Http.(*Kernel).Handle(0xc0000b8150, 0xc00000e018, 0xc000072180)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Kernel.go:67 +0x105
+php-in-go/Bootstrap.(*App).Handle(0xc00019bb70, 0x123d945, 0x1349900)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Bootstrap/App.go:59 +0x59
+
+2022-04-14 15:57:54 [200] GET /
+ 
+ 
+2022-04-14 15:58:03 [500] GET /name
+ runtime error: invalid memory address or nil pointer dereference
+ goroutine 20 [running]:
+php-in-go/Include/Foundation/Http.(*Kernel).Handle.func1()
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Kernel.go:37 +0x8c
+panic({0x12a4840, 0x152c140})
+	/usr/local/opt/go/libexec/src/runtime/panic.go:1038 +0x215
+php-in-go/Include/Foundation/Http/Session.(*Session).GetSession(0xc000090cd0, {0x12e4896, 0x1}, 0xc00001a1c0, 0x2)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Session/Session.go:27 +0x98
+php-in-go/Include/Foundation/Http/Controller.(*BaseController).GetSession(0xc000094d20, {0x12e4896, 0x1})
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Controller/BaseController.go:42 +0x56
+php-in-go/App/Http/Controller.(*Index).Name(0xc00012a790, 0x10b98fd)
+	/Users/yehua/Desktop/program/开源/PhpInGo/App/Http/Controller/Index.go:17 +0x2c
+reflect.Value.call({0x12905a0, 0xc00019e0c0, 0x18}, {0x12e4b65, 0x4}, {0xc0001b2018, 0x1, 0x0})
+	/usr/local/opt/go/libexec/src/reflect/value.go:543 +0x814
+reflect.Value.Call({0x12905a0, 0xc00019e0c0, 0x0}, {0xc0001b2018, 0x1, 0x1})
+	/usr/local/opt/go/libexec/src/reflect/value.go:339 +0xc5
+php-in-go/Include/Container.(*Container).callFunc(0x0, {0x12905a0, 0xc00019e0c0}, 0x0, 0x0)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Container/Container.go:199 +0x79e
+php-in-go/Include/Container.(*Container).Resolve(0xc00018c150, {0x12905a0, 0xc00019e0c0}, 0x12e4ba9, 0x1)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Container/Container.go:122 +0x10b
+php-in-go/Include/Foundation/Http.(*Kernel).dispatch(0xc0000bc120, 0xc0001ba060, 0xc00019e080, 0xc00012b9c0, {0x1353420, 0xc00018c150})
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Kernel.go:99 +0x168
+php-in-go/Include/Foundation/Http.(*Kernel).Handle(0xc0000b0150, 0xc0001b2000, 0xc00019e080)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Kernel.go:67 +0x105
+php-in-go/Bootstrap.(*App).Handle(0xc00012bb70, 0x123d945, 0x1349a00)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Bootstrap/App.go:59 +0x59
+
+2022-04-14 15:58:52 [200] GET /
+ 
+ 
+2022-04-14 15:58:55 [200] GET /name
+ 
+ 
+2022-04-14 15:59:01 [200] GET /name.html
+ 
+ 
+2022-04-14 15:59:11 [200] GET /
+ 
+ 
+2022-04-14 16:00:40 [200] GET /
+ 
+ 
+2022-04-14 16:01:59 [200] GET /
+ 
+ 
+2022-04-14 16:10:22 [200] GET /
+ 
+ 
+2022-04-14 16:10:27 [200] GET /name
+ 
+ 
+2022-04-14 16:10:47 [200] GET /
+ 
+ 
+2022-04-14 16:10:50 [200] GET /name
+ 
+ 

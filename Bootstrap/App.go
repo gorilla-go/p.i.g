@@ -51,6 +51,11 @@ func (a *App) Initializer() {
 }
 
 func (a *App) Handle(request *Http.Request, response *Http.Response) {
+	defer func() {
+		a.cache.CloseCacheManager()
+		a.session.CloseSessionManager()
+		a.log.CloseLogManager()
+	}()
 	a.kernel.Handle(request, response)
 }
 

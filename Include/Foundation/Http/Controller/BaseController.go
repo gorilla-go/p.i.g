@@ -35,11 +35,11 @@ func (c *BaseController) Resolve(abstract interface{}) interface{} {
 }
 
 func (c *BaseController) SetSession(k string, v string) {
-	c.App.GetSession().SetSession(k, v, c.GetConfig("sessionExpire").(int))
+	c.App.GetSession().SetSession(k, v, c.Request, c.Response)
 }
 
 func (c *BaseController) GetSession(k string) interface{} {
-	return c.App.GetSession().GetSession(k)
+	return c.App.GetSession().GetSession(k, c.Request, c.Response)
 }
 
 func (c *BaseController) GetConfig(s string) interface{} {

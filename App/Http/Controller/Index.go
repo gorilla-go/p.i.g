@@ -11,12 +11,17 @@ type Index struct {
 }
 
 func (t *Index) Index(response *Http.Response) {
-	t.Resolve(func(session Session.ISession) {
-		session.SetSession("a", "b", 3600)
-		response.Echo(session.GetSession("a"))
+	t.Resolve(func(t *Index) {
+
 	})
 }
 
 func (t *Index) Name(response *Http.Response) {
-	response.Echo(t.GetSession("k"))
+	t.Resolve(func(session Session.ISession, request *Http.Request) {
+		response.Echo(session.GetSession(
+			"a",
+			request,
+			response,
+		))
+	})
 }

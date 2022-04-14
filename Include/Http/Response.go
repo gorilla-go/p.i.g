@@ -37,6 +37,11 @@ func (r *Response) SetHeader(key string, content string) *Response {
 	return r
 }
 
+func (r *Response) AddHeader(key string, content string) *Response {
+	r.responseWriter.Header().Add(key, content)
+	return r
+}
+
 func (r *Response) write(content string) {
 	_, err := r.responseWriter.Write([]byte(content))
 	if err != nil {
@@ -67,7 +72,7 @@ func (r *Response) Json(j interface{}) {
 }
 
 func (r *Response) AddCookie(cookie *http.Cookie) {
-	r.SetHeader("set-cookie", cookie.String())
+	r.AddHeader("set-cookie", cookie.String())
 }
 
 func (r *Response) Dump(i interface{}) {

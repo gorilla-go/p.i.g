@@ -1,8 +1,12 @@
 package Session
 
 import (
+	"fmt"
+	"net/http"
 	"php-in-go/Include/Contracts/Cache"
-	"strings"
+	"php-in-go/Include/Http"
+	"php-in-go/Include/Util"
+	"time"
 )
 
 type Session struct {
@@ -16,24 +20,42 @@ func (s *Session) StartSessionManager(cache Cache.ICache) {
 func (s *Session) CloseSessionManager() {
 }
 
-func (s *Session) GetSession(str string) interface{} {
-	return s.cache.GetCache(str, "session/").Value
+func (s *Session) GetSession(str string, request *Http.Request, response *Http.Response) interface{} {
+	return s.cache.GetCache(
+		str,
+		fmt.Sprintf("session/%s/", s.getClientKey(request, response)),
+	).Value
 }
 
-func (s *Session) SetSession(key string, v interface{}, expire int) {
+func (s *Session) SetSession(key string, v interface{}, request *Http.Request, response *Http.Response) {
 	s.cache.SetCache(
 		key,
 		v,
-		expire,
-		"session/",
+		request.AppConfig["sessionExpire"].(int),
+		fmt.Sprintf("session/%s/", s.getClientKey(request, response)),
 	)
 }
 
-func (s *Session) GetSessionList() map[string]interface{} {
-	c := make(map[string]interface{})
-	group := s.cache.GetCachePath("session/")
-	for k, v := range group {
-		c[strings.Replace(k, "session/", "", 1)] = v
+func (s *Session) Clear(request *Http.Request, response *Http.Response) {
+	s.cache.ClearPath(fmt.Sprintf("session/%s/", s.getClientKey(request, response)))
+}
+
+func (s *Session) getClientKey(request *Http.Request, response *Http.Response) string {
+	clientKey := request.AppConfig["sessionKey"].(string)
+	cookie, err := request.Cookie(clientKey)
+	cv := ""
+	expire := request.AppConfig["sessionExpire"].(int)
+	if err == http.ErrNoCookie {
+		uuid := Util.Uuid()
+		response.AddCookie(&http.Cookie{
+			Name:    clientKey,
+			Value:   uuid,
+			Path:    "/",
+			Expires: time.Now().Add(time.Second * time.Duration(expire)),
+		})
+		cv = uuid
+	} else {
+		cv = cookie.Value
 	}
-	return c
+	return cv
 }

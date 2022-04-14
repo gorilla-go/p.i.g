@@ -1,16 +1,35 @@
 package Cache
 
 import (
+	"context"
 	"strings"
 	"time"
 )
 
 type MemoryCache struct {
 	pairContainer map[string]*Cache
+	cancelLoop    context.CancelFunc
 }
 
 func (m *MemoryCache) StartCacheManager() {
 	m.pairContainer = make(map[string]*Cache)
+	cancel, cancelFunc := context.WithCancel(context.Background())
+	m.cancelLoop = cancelFunc
+	go func() {
+		for true {
+			select {
+			case <-cancel.Done():
+				return
+			default:
+				for name, cache := range m.pairContainer {
+					if cache.Expire.Before(time.Now()) {
+						delete(m.pairContainer, name)
+					}
+				}
+				time.Sleep(time.Second * 60)
+			}
+		}
+	}()
 }
 
 func (m *MemoryCache) SetCache(key string, value interface{}, expire int, path string) {
@@ -40,7 +59,7 @@ func (m *MemoryCache) ClearAll() {
 }
 
 func (m *MemoryCache) GetCache(key string, path string) *Cache {
-	if v, exist := m.pairContainer[path+key]; exist {
+	if v, exist := m.pairContainer[path+key]; exist && v.Expire.After(time.Now()) {
 		return v
 	}
 	return nil
@@ -57,5 +76,5 @@ func (m *MemoryCache) GetCachePath(path string) map[string]interface{} {
 }
 
 func (m *MemoryCache) CloseCacheManager() {
-	//TODO Something.
+	m.cancelLoop()
 }
