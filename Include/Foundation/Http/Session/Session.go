@@ -1,12 +1,9 @@
 package Session
 
 import (
-	Config2 "php-in-go/Config"
 	"php-in-go/Include/Contracts/Cache"
 	"strings"
 )
-
-const SESSION_PREFIX = "session/"
 
 type Session struct {
 	cache Cache.ICache
@@ -20,25 +17,23 @@ func (s *Session) CloseSessionManager() {
 }
 
 func (s *Session) GetSession(str string) interface{} {
-	return s.cache.GetCache(str, SESSION_PREFIX).Value
+	return s.cache.GetCache(str, "session/").Value
 }
 
-func (s *Session) SetSession(key string, v interface{}) {
-	config := Config2.App()
-	sessionExpire := config["sessionExpire"].(int)
+func (s *Session) SetSession(key string, v interface{}, expire int) {
 	s.cache.SetCache(
 		key,
 		v,
-		sessionExpire,
-		SESSION_PREFIX,
+		expire,
+		"session/",
 	)
 }
 
 func (s *Session) GetSessionList() map[string]interface{} {
 	c := make(map[string]interface{})
-	group := s.cache.GetCachePath(SESSION_PREFIX)
+	group := s.cache.GetCachePath("session/")
 	for k, v := range group {
-		c[strings.Replace(k, SESSION_PREFIX, "", 1)] = v
+		c[strings.Replace(k, "session/", "", 1)] = v
 	}
 	return c
 }

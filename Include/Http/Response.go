@@ -5,19 +5,22 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	Util2 "php-in-go/Include/Util"
+	Util2 "php-in-go/Include/Util/Debug"
+	"php-in-go/Include/Util/FileSystem"
 	"strconv"
 )
 
 type Response struct {
+	AppConfig      map[string]interface{}
 	Code           int
 	responseWriter http.ResponseWriter
 	ErrorStack     string
 	ErrorMessage   string
 }
 
-func BuildResponse(responseWriter http.ResponseWriter) *Response {
+func BuildResponse(responseWriter http.ResponseWriter, appConfig map[string]interface{}) *Response {
 	return &Response{
+		AppConfig:      appConfig,
 		responseWriter: responseWriter,
 		Code:           200,
 	}
@@ -94,7 +97,7 @@ func (r *Response) EchoWithCode(i interface{}, code int) {
 }
 
 func (r *Response) Download(file string, name string) {
-	if Util2.IsFile(file) == false {
+	if FileSystem.IsFile(file) == false {
 		panic("Invalid file path: " + file)
 	}
 	fileBytes, err := ioutil.ReadFile(file)

@@ -3,18 +3,19 @@ package Http
 import (
 	"net/http"
 	"net/url"
-	"php-in-go/Config"
 	"strings"
 )
 
 type Request struct {
-	Params *url.Values
+	Params    *url.Values
+	AppConfig map[string]interface{}
 	*http.Request
 }
 
-func BuildRequest(request *http.Request) *Request {
+func BuildRequest(request *http.Request, appConfig map[string]interface{}) *Request {
 	return &Request{
-		Params: nil,
+		Params:    nil,
+		AppConfig: appConfig,
 		Request: &http.Request{
 			Method:           request.Method,
 			URL:              request.URL,
@@ -45,11 +46,10 @@ func (r *Request) IsAjax() bool {
 }
 
 func (r *Request) IsPjax() bool {
-	routeConfig := Config.Route()
 	if r.IsAjax() == false {
 		return false
 	}
-	_, b := r.ParamVar(routeConfig["pjaxName"].(string))
+	_, b := r.ParamVar(r.AppConfig["pjaxName"].(string))
 	return b
 }
 

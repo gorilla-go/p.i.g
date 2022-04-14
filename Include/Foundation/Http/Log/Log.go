@@ -3,9 +3,8 @@ package Log
 import (
 	"fmt"
 	"os"
-	"php-in-go/Config"
 	"php-in-go/Include/Http"
-	Util2 "php-in-go/Include/Util"
+	FileSystem2 "php-in-go/Include/Util/FileSystem"
 	"time"
 )
 
@@ -30,16 +29,15 @@ func (l *Log) Log(request *Http.Request, response *Http.Response) {
 		response.ErrorMessage,
 	)
 	filePrefix := time.Now().Format("0601")
-	config := Config.App()
-	path := config["logPath"].(string)
+	path := request.AppConfig["logPath"].(string)
 	rootFile, err := os.Getwd()
 	if err != nil {
 		panic(err)
 	}
 	file := fmt.Sprintf("%s/%s%s/", rootFile, path, filePrefix)
 
-	if Util2.IsFile(file) == false {
-		Util2.Mkdir(file)
+	if FileSystem2.IsFile(file) == false {
+		FileSystem2.Mkdir(file)
 	}
 	f, err := os.OpenFile(
 		fmt.Sprintf(

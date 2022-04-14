@@ -2,9 +2,8 @@ package main
 
 import (
 	"os"
+	"php-in-go/Bootstrap"
 	Config2 "php-in-go/Config"
-	"php-in-go/Include/Container"
-	"php-in-go/Include/Contracts/Server"
 	"php-in-go/Include/Foundation/Config"
 	Http2 "php-in-go/Include/Foundation/Server"
 )
@@ -14,19 +13,18 @@ func main() {
 	if pathError != nil {
 		panic("unknown error.")
 	}
-	container := Container.NewContainer()
-
-	// set global container.
-	container.AddBinding((*Server.IServer)(nil), Container.NewBindingImpl(&Http2.HttpServer{}))
-	httpServer := container.GetSingletonByAbstract((*Server.IServer)(nil)).(Server.IServer)
 
 	// config.
 	appConfig := Config2.App()
+
+	// set global container.
+	httpServer := &Http2.HttpServer{}
 
 	// init http server.
 	httpServer.Initializer(Config.HttpServer{
 		BasePath: basePath,
 		Port:     appConfig["port"].(int),
+		App:      &Bootstrap.App{},
 	})
 
 	// start to listen.

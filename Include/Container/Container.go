@@ -2,7 +2,6 @@ package Container
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
 )
 
@@ -35,7 +34,7 @@ func (c *Container) AddBinding(abstract interface{}, elem *BindingImpl) {
 		if elem.GetAlias() != "" {
 			mapName = elem.GetAlias()
 		}
-		c.Singleton(elem.GetConcrete().Interface(), mapName)
+		c.Singleton(elem.GetConcrete(), mapName)
 	}
 }
 
@@ -75,30 +74,22 @@ func (c *Container) GetSingletonByAbstract(abstract interface{}) interface{} {
 	if concrete == nil {
 		return nil
 	}
-	return (*concrete).Interface()
+	return concrete
 }
 
-func (c *Container) getConcrete(abstract string) *reflect.Value {
+func (c *Container) getConcrete(abstract string) interface{} {
 	if abstractElem, ok := c.bindings[abstract]; ok {
 		if abstractElem.GetShared() == true {
 
 			// search with alias
 			if abstractElem.GetAlias() != "" {
-				inject := reflect.ValueOf(c.GetSingletonByAlias(abstractElem.GetAlias()))
-				return &inject
+				return c.GetSingletonByAlias(abstractElem.GetAlias())
 			}
 
 			// search from instance
-			mapName := GetPackageClassNameByRef(abstractElem.GetConcrete().Type())
-			obj, exist := c.singleton[mapName]
-			if !exist {
-				panic("unknown error")
-			}
-			inject := reflect.ValueOf(obj)
-			return &inject
+			return c.GetSingleton(abstractElem.GetConcrete())
 		}
-		con := abstractElem.GetConcrete()
-		return &con
+		return abstractElem.GetConcrete()
 	}
 	return nil
 }
@@ -125,9 +116,6 @@ func (c *Container) Resolve(abstract interface{}, params map[string]interface{},
 		}
 		r := c.build(abstract, params, false)
 		// cache
-		fmt.Println("----")
-		fmt.Println(abstract)
-		fmt.Println(r)
 		c.Singleton(r, "")
 		return r
 	case reflect.Func:
@@ -229,7 +217,7 @@ func (c *Container) resolveAbstract(abstract reflect.Type, params map[string]int
 	}
 
 	// build object
-	object := c.Resolve((*concrete).Interface(), params, new)
+	object := c.Resolve(concrete, params, new)
 
 	// cache build result for next.
 	c.singletonAliasAbstract[packagePath] = object

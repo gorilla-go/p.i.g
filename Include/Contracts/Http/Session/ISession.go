@@ -6,6 +6,6 @@ type ISession interface {
 	StartSessionManager(cache Cache.ICache)
 	CloseSessionManager()
 	GetSession(s string) interface{}
-	SetSession(key string, v interface{})
+	SetSession(key string, v interface{}, expire int)
 	GetSessionList() map[string]interface{}
 }

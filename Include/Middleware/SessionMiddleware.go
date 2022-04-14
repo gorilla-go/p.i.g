@@ -2,7 +2,6 @@ package Middleware
 
 import (
 	"net/http"
-	"php-in-go/Config"
 	"php-in-go/Include/Http"
 	"php-in-go/Include/Routing"
 	"php-in-go/Include/Util"
@@ -13,8 +12,7 @@ type SessionMiddleware struct {
 }
 
 func (m *SessionMiddleware) Handle(request *Http.Request, response *Http.Response, target *Routing.Target) bool {
-	appConfig := Config.App()
-	sessionKey := appConfig["sessionKey"].(string)
+	sessionKey := request.AppConfig["sessionKey"].(string)
 
 	cookie, err := request.Cookie(sessionKey)
 	if err == http.ErrNoCookie || cookie.Value == "" {
@@ -22,7 +20,7 @@ func (m *SessionMiddleware) Handle(request *Http.Request, response *Http.Respons
 			Name:    sessionKey,
 			Value:   Util.Uuid(),
 			Path:    "/",
-			Expires: time.Now().Add(time.Second * time.Duration(appConfig["sessionExpire"].(int))),
+			Expires: time.Now().Add(time.Second * time.Duration(request.AppConfig["sessionExpire"].(int))),
 		})
 	}
 	return true

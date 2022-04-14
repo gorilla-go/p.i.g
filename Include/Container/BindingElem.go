@@ -6,7 +6,7 @@ import (
 )
 
 type BindingImpl struct {
-	concrete reflect.Value
+	concrete interface{}
 	shared   bool
 	alias    string
 }
@@ -17,18 +17,18 @@ func NewBindingImpl(concrete interface{}) *BindingImpl {
 	// check type.
 	refType := refValue.Type().Kind()
 	if refType != reflect.Ptr {
-		panic(errors.New("UnSupport non-pointer implement type: " + refType.String()))
+		panic(errors.New("UnSupport non-pointer type: " + refType.String()))
 	}
 
 	// combine struct.
 	return &BindingImpl{
-		concrete: refValue,
+		concrete: concrete,
 		shared:   false,
 		alias:    "",
 	}
 }
 
-func (e *BindingImpl) GetConcrete() reflect.Value {
+func (e *BindingImpl) GetConcrete() interface{} {
 	return e.concrete
 }
 

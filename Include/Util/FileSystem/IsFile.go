@@ -1,7 +1,6 @@
-package Util
+package FileSystem
 
 import (
-	"fmt"
 	"os"
 )
 
@@ -14,8 +13,7 @@ func IsFile(file string) bool {
 		if os.IsNotExist(err) {
 			return false
 		}
-		fmt.Println(err)
-		return false
+		panic(err)
 	}
 	return true
 }

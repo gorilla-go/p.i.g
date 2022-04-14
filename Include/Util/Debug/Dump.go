@@ -1,4 +1,4 @@
-package Util
+package Debug
 
 import (
 	"fmt"
@@ -27,14 +27,14 @@ func Dump(i interface{}, level int) string {
 		refType := reflect.TypeOf(i)
 		fieldNum := refValue.NumField()
 		dumpStr := Container.GetPackageClassName(i) + " (Struct)"
-		for i := 0; i < fieldNum; i++ {
-			fieldType := refType.Field(i)
+		for ii := 0; ii < fieldNum; ii++ {
+			fieldType := refType.Field(ii)
 			if fieldType.IsExported() == false {
 				continue
 			}
 			tmpStr := ""
-			if refValue.Field(i).IsValid() && refValue.Field(i).IsZero() == false {
-				tmpStr = Dump(refValue.Field(i).Interface(), level+1)
+			if refValue.Field(ii).IsValid() && refValue.Field(ii).IsZero() == false {
+				tmpStr = Dump(refValue.Field(ii).Interface(), level+1)
 			} else {
 				tmpStr = "nil (" + fieldType.Type.Kind().String() + ")"
 			}

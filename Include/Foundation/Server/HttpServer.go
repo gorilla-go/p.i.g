@@ -3,8 +3,7 @@ package Server
 import (
 	"fmt"
 	"net/http"
-	"php-in-go/Bootstrap"
-	"php-in-go/Include/Contracts/Http"
+	"php-in-go/Include/Contracts/Http/App"
 	"php-in-go/Include/Foundation/Config"
 	Http2 "php-in-go/Include/Http"
 )
@@ -12,7 +11,7 @@ import (
 type HttpServer struct {
 	port     int
 	bashPath string
-	app      Http.IApp
+	app      App.IApp
 }
 
 func (s *HttpServer) Initializer(config Config.HttpServer) {
@@ -21,19 +20,28 @@ func (s *HttpServer) Initializer(config Config.HttpServer) {
 	s.bashPath = config.BasePath
 
 	// set http kernel
-	s.app = &Bootstrap.App{}
+	s.app = config.App
 }
 
 func (s *HttpServer) Start() {
 	// set global container to http kernel
-	s.app.Initializer(s)
+	s.app.Initializer()
 
 	// start server.
 	http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
 		// start to dispatch.
-		s.app.Handle(Http2.BuildRequest(request), Http2.BuildResponse(writer))
+		s.app.Handle(
+			Http2.BuildRequest(
+				request,
+				s.app.GetConfigs(),
+			),
+			Http2.BuildResponse(
+				writer,
+				s.app.GetConfigs(),
+			),
+		)
 	})
 
-	err := http.ListenAndServe(fmt.Sprintf(":%d", s.port), nil)
-	fmt.Println(err)
+	// error?
+	panic(http.ListenAndServe(fmt.Sprintf(":%d", s.port), nil))
 }
