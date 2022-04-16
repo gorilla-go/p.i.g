@@ -34,6 +34,11 @@ func (c *BaseController) Resolve(abstract interface{}) interface{} {
 	return c.Container.Resolve(abstract, nil, false)
 }
 
+// ResolveNew receive new object from container.
+func (c *BaseController) ResolveNew(abstract interface{}) interface{} {
+	return c.Container.Resolve(abstract, nil, true)
+}
+
 func (c *BaseController) SetSession(k string, v string) {
 	c.App.GetSession().SetSession(k, v, c.Request, c.Response)
 }

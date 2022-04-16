@@ -4,9 +4,11 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
 
 type Request struct {
+	StartTime time.Time
 	Params    *url.Values
 	AppConfig map[string]interface{}
 	*http.Request
@@ -14,6 +16,7 @@ type Request struct {
 
 func BuildRequest(request *http.Request, appConfig map[string]interface{}) *Request {
 	return &Request{
+		StartTime: time.Now(),
 		Params:    nil,
 		AppConfig: appConfig,
 		Request: &http.Request{

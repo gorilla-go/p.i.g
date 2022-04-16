@@ -111,35 +111,43 @@ func (c *Container) Resolve(abstract interface{}, params map[string]interface{},
 	case reflect.Struct:
 		// search from cache
 		cacheValue := c.GetSingleton(abstract)
-		if cacheValue != nil && new == false {
+		if cacheValue != nil && new == false && (params == nil || len(params) == 0) {
 			return cacheValue
 		}
-		r := c.build(abstract, params, false)
+		r := c.build(abstract, params)
 		// cache
-		c.Singleton(r, "")
+		if new == false && (params == nil || len(params) == 0) {
+			c.Singleton(r, "")
+		}
 		return r
 	case reflect.Func:
-		return c.callFunc(abstract, params, false)
+		return c.callFunc(abstract, params)
 	case reflect.Ptr:
 		// search from cache
 		cacheValue := c.GetSingleton(abstract)
-		if cacheValue != nil && new == false {
+		if cacheValue != nil && new == false && (params == nil || len(params) == 0) {
 			return cacheValue
 		}
 		// real-time resolve
 		d := reflect.ValueOf(abstract)
+
+		if new == true {
+			d = reflect.New(d.Elem().Type())
+		}
 		if d.Elem().IsValid() == false || d.Elem().CanSet() == false {
 			return abstract
 		}
 		o := c.Resolve(
 			d.Elem().Interface(),
 			params,
-			false,
+			new,
 		)
 		d.Elem().Set(reflect.ValueOf(o))
 		r := d.Interface()
 		// cache
-		c.Singleton(r, "")
+		if new == false && (params == nil || len(params) == 0) {
+			c.Singleton(r, "")
+		}
 		return r
 	default:
 		return abstract
@@ -147,7 +155,7 @@ func (c *Container) Resolve(abstract interface{}, params map[string]interface{},
 }
 
 // callFunc resolve function and call with params.
-func (c *Container) callFunc(abstract interface{}, params map[string]interface{}, new bool) []reflect.Value {
+func (c *Container) callFunc(abstract interface{}, params map[string]interface{}) []reflect.Value {
 	// resolve target method
 	targetMethod := reflect.ValueOf(abstract)
 
@@ -180,7 +188,7 @@ func (c *Container) callFunc(abstract interface{}, params map[string]interface{}
 			paramsArr = append(
 				paramsArr,
 				reflect.ValueOf(
-					c.resolveAbstract(paramItemType, nil, new),
+					c.resolveAbstract(paramItemType, nil, false),
 				),
 			)
 			continue
@@ -190,7 +198,7 @@ func (c *Container) callFunc(abstract interface{}, params map[string]interface{}
 		paramsArr = append(
 			paramsArr,
 			reflect.ValueOf(
-				c.Resolve(reflect.New(paramItemType).Elem().Interface(), nil, new),
+				c.Resolve(reflect.New(paramItemType).Elem().Interface(), nil, false),
 			),
 		)
 	}
@@ -204,7 +212,8 @@ func (c *Container) resolveAbstract(abstract reflect.Type, params map[string]int
 	packagePath := GetPackageClassNameByRef(abstract)
 
 	// has cache ?
-	if v, exist := c.singletonAliasAbstract[packagePath]; exist && new == false {
+	v, exist := c.singletonAliasAbstract[packagePath]
+	if exist && new == false && (params == nil || len(params) == 0) {
 		return v
 	}
 
@@ -223,23 +232,20 @@ func (c *Container) resolveAbstract(abstract reflect.Type, params map[string]int
 	c.singletonAliasAbstract[packagePath] = object
 
 	// shared ?
-	if c.bindings[packagePath].shared == true {
+	if c.bindings[packagePath].shared == true && new == false && (params == nil || len(params) == 0) {
 		c.Singleton(object, c.bindings[packagePath].alias)
 	}
 
 	return object
 }
 
-// build  resolve params inject.
-func (c *Container) build(object interface{}, params map[string]interface{}, new bool) interface{} {
+// build  resolve struct.
+func (c *Container) build(object interface{}, params map[string]interface{}) interface{} {
 	// get scene class name.
 	packageName := GetPackageClassName(object)
 
-	// get reflection type for next.
-	reflectionType := reflect.TypeOf(object)
-
 	// re-construct struct for memory
-	refValue := reflect.New(reflectionType).Elem()
+	refValue := reflect.New(reflect.TypeOf(object)).Elem()
 
 	for i := 0; i < refValue.NumField(); i++ {
 		// get current field struct map.
@@ -278,7 +284,7 @@ func (c *Container) build(object interface{}, params map[string]interface{}, new
 					c.resolveAbstract(
 						fieldValue.Type(),
 						nil,
-						new,
+						false,
 					),
 				),
 			)
@@ -300,7 +306,7 @@ func (c *Container) build(object interface{}, params map[string]interface{}, new
 				c.Resolve(
 					fieldValue.Interface(),
 					nil,
-					new,
+					false,
 				),
 			),
 		)
