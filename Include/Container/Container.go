@@ -253,7 +253,7 @@ func (c *Container) build(object interface{}, params map[string]interface{}, new
 		}
 
 		// inject tag
-		if fieldStruct.Tag.Get("inject") == "false" {
+		if tag, ok := fieldStruct.Tag.Lookup("inject"); ok && tag == "false" {
 			continue
 		}
 
@@ -283,6 +283,15 @@ func (c *Container) build(object interface{}, params map[string]interface{}, new
 				),
 			)
 			continue
+		}
+
+		// set attribute
+		if tag, ok := fieldStruct.Tag.Lookup("default"); ok {
+			refDefaultValue := reflect.ValueOf(tag)
+			if refDefaultValue.CanConvert(fieldStruct.Type) {
+				fieldValue.Set(refDefaultValue.Convert(fieldStruct.Type))
+				continue
+			}
 		}
 
 		// build in-time

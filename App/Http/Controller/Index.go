@@ -1,6 +1,7 @@
 package Controller
 
 import (
+	"php-in-go/App/Http/Model"
 	"php-in-go/Include/Contracts/Http/Session"
 	"php-in-go/Include/Foundation/Http/Controller"
 	"php-in-go/Include/Http"
@@ -11,9 +12,8 @@ type Index struct {
 }
 
 func (t *Index) Index(response *Http.Response) {
-	t.Resolve(func(t *Index) {
-
-	})
+	userModel := t.Resolve(Model.UserModel{}).(Model.UserModel)
+	response.Echo(userModel.Table)
 }
 
 func (t *Index) Name(response *Http.Response) {
