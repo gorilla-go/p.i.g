@@ -29,6 +29,6 @@ func App() map[string]interface{} {
 		Route(),
 		Cache(),
 		Log(),
+		Database(),
 	)
-
 }

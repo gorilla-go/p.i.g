@@ -15,6 +15,7 @@ import (
 	"php-in-go/Include/Routing"
 	"reflect"
 	"runtime"
+	"time"
 )
 
 type Kernel struct {
@@ -48,6 +49,9 @@ func (k *Kernel) Handle(request *Http.Request, response *Http.Response) {
 			response.ErrorMessage = fmt.Sprintf("%v", err)
 		}
 
+		// dump into debug
+		k.shellDump(request, response)
+
 		// logger.
 		k.app.GetLogger().Log(request, response)
 	}()
@@ -67,6 +71,18 @@ func (k *Kernel) Handle(request *Http.Request, response *Http.Response) {
 	k.dispatch(actionTarget, request, response, container)
 }
 
+func (k *Kernel) shellDump(request *Http.Request, response *Http.Response) {
+	fmt.Printf(
+		"%s [%d] %s %s %dms  %s\n",
+		time.Now().Format("2006-01-02 15:04:05"),
+		response.Code,
+		request.Method,
+		request.RequestURI,
+		time.Now().Sub(request.StartTime).Microseconds(),
+		response.ErrorMessage,
+	)
+}
+
 // dispatch call correct controller method.
 func (k *Kernel) dispatch(
 	target *Routing.Target,
@@ -76,11 +92,7 @@ func (k *Kernel) dispatch(
 ) {
 	// page no found
 	if target == nil {
-		baseController := &Controller2.BaseController{
-			Request:  request,
-			Response: response,
-		}
-		baseController.NoFound()
+		k.pageNoFoundHandle(request, response)
 		return
 	}
 
@@ -88,11 +100,17 @@ func (k *Kernel) dispatch(
 	targetController := container.Resolve(target.Controller, nil, true).(Controller.IController)
 
 	// resolve target method
-	targetMethod := reflect.ValueOf(targetController).MethodByName(target.Method)
+	controllerRef := reflect.ValueOf(targetController)
+	targetMethod := controllerRef.MethodByName(target.Method)
 
 	// no found method ? to NoFound method in base controller.
 	if targetMethod.IsValid() == false {
-		panic(fmt.Sprintf("Controller method no found: %s", target.Method))
+		if m := controllerRef.MethodByName("NoFound"); m.IsValid() == true {
+			container.Resolve(m.Interface(), nil, true)
+			return
+		}
+		k.pageNoFoundHandle(request, response)
+		return
 	}
 
 	// call method.
@@ -150,4 +168,12 @@ func (k *Kernel) middlewareHandler(target *Routing.Target, request *Http.Request
 		}
 	}
 	return true
+}
+
+func (k *Kernel) pageNoFoundHandle(request *Http.Request, response *Http.Response) {
+	baseController := &Controller2.BaseController{
+		Request:  request,
+		Response: response,
+	}
+	baseController.NoFound()
 }

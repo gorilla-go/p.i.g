@@ -10,7 +10,7 @@ type Index struct {
 }
 
 func (t *Index) Index() {
-
+	t.Response.Echo("")
 }
 
 func (t *Index) Name(response *Http.Response) {

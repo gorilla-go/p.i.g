@@ -20,15 +20,6 @@ func (l *Log) CloseLogManager() {
 }
 
 func (l *Log) Log(request *Http.Request, response *Http.Response) {
-	fmt.Printf(
-		"%s [%d] %s %s %dms  %s\n",
-		time.Now().Format("2006-01-02 15:04:05"),
-		response.Code,
-		request.Method,
-		request.RequestURI,
-		time.Now().Sub(request.StartTime).Microseconds(),
-		response.ErrorMessage,
-	)
 	filePrefix := time.Now().Format("0601")
 	path := request.AppConfig["logPath"].(string)
 	rootFile, err := os.Getwd()
