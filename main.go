@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "net/http/pprof"
 	"os"
 	"php-in-go/Bootstrap"
 	Config2 "php-in-go/Config"

@@ -105,10 +105,6 @@ func (k *Kernel) dispatch(
 
 	// no found method ? to NoFound method in base controller.
 	if targetMethod.IsValid() == false {
-		if m := controllerRef.MethodByName("NoFound"); m.IsValid() == true {
-			container.Resolve(m.Interface(), nil, true)
-			return
-		}
 		k.pageNoFoundHandle(request, response)
 		return
 	}

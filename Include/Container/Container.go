@@ -241,11 +241,13 @@ func (c *Container) resolveAbstract(abstract reflect.Type, params map[string]int
 
 // build  resolve struct.
 func (c *Container) build(object interface{}, params map[string]interface{}) interface{} {
+	refType := reflect.TypeOf(object)
+
 	// get scene class name.
-	packageName := GetPackageClassName(object)
+	packageName := GetPackageClassNameByRef(refType)
 
 	// re-construct struct for memory
-	refValue := reflect.New(reflect.TypeOf(object)).Elem()
+	refValue := reflect.New(refType).Elem()
 
 	for i := 0; i < refValue.NumField(); i++ {
 		// get current field struct map.

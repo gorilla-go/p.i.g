@@ -1,0 +1,154 @@
+2022-04-22 15:18:33 [500] GET /
+ reflect: reflect.Value.SetPointer using unaddressable value
+ goroutine 7 [running]:
+php-in-go/Include/Foundation/Http.(*Kernel).Handle.func1()
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Kernel.go:38 +0x92
+panic({0x1291d00, 0xc000094060})
+	/usr/local/opt/go/libexec/src/runtime/panic.go:1038 +0x215
+reflect.flag.mustBeAssignableSlow(0x0)
+	/usr/local/opt/go/libexec/src/reflect/value.go:262 +0x85
+reflect.flag.mustBeAssignable(...)
+	/usr/local/opt/go/libexec/src/reflect/value.go:249
+reflect.Value.SetPointer({0x12ca340, 0xc000154000, 0x12bcf80}, 0xc000094050)
+	/usr/local/opt/go/libexec/src/reflect/value.go:2079 +0x48
+php-in-go/Include/Container.(*Container).build(0xc000090210, {0x12c92c0, 0xc0000903c0}, 0x0)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Container/Container.go:285 +0x4f1
+php-in-go/Include/Container.(*Container).Resolve(0xc000090210, {0x12c92c0, 0xc0000903c0}, 0x0, 0x0)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Container/Container.go:118 +0x1d4
+php-in-go/Include/Container.(*Container).build(0xc000090210, {0x12afb20, 0xc000090360}, 0x0)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Container/Container.go:300 +0x62b
+php-in-go/Include/Container.(*Container).Resolve(0xc000090210, {0x12afb20, 0xc000090360}, 0x0, 0x1)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Container/Container.go:118 +0x1d4
+php-in-go/Include/Container.(*Container).Resolve(0xc000090210, {0x12cba00, 0xc000108cf0}, 0x0, 0x1)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Container/Container.go:141 +0x453
+php-in-go/Include/Foundation/Http.(*Kernel).dispatch(0xc000066140, 0xc0000be040, 0xc000092140, 0xc000092140, {0x1353b80, 0xc000090210})
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Kernel.go:100 +0x68
+php-in-go/Include/Foundation/Http.(*Kernel).Handle(0xc00000e168, 0xc0000900f0, 0xc000092140)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Kernel.go:71 +0x105
+php-in-go/Bootstrap.(*App).Handle(0xc000164100, 0xc000108cc0, 0x134a1a0)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Bootstrap/App.go:59
+2022-04-22 15:18:33 [404] GET /favicon.ico
+ 
+ 
+2022-04-22 15:19:21 [200] GET /
+ 
+ 
+2022-04-22 15:19:24 [200] GET /
+ 
+ 
+2022-04-22 15:19:27 [200] GET /
+ 
+ 
+2022-04-22 15:52:54 [500] GET /
+ reflect: reflect.Value.SetPointer using unaddressable value
+ goroutine 7 [running]:
+php-in-go/Include/Foundation/Http.(*Kernel).Handle.func1()
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Kernel.go:38 +0x92
+panic({0x1291e00, 0xc000012e00})
+	/usr/local/opt/go/libexec/src/runtime/panic.go:1038 +0x215
+reflect.flag.mustBeAssignableSlow(0x0)
+	/usr/local/opt/go/libexec/src/reflect/value.go:262 +0x85
+reflect.flag.mustBeAssignable(...)
+	/usr/local/opt/go/libexec/src/reflect/value.go:249
+reflect.Value.SetPointer({0x12ca440, 0xc000154000, 0x12bd080}, 0xc000012df0)
+	/usr/local/opt/go/libexec/src/reflect/value.go:2079 +0x48
+php-in-go/Include/Container.(*Container).build(0xc000109230, {0x12c93c0, 0xc0001093e0}, 0x0)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Container/Container.go:291 +0x5f7
+php-in-go/Include/Container.(*Container).Resolve(0xc000109230, {0x12c93c0, 0xc0001093e0}, 0x0, 0x0)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Container/Container.go:118 +0x1d4
+php-in-go/Include/Container.(*Container).build(0xc000109230, {0x12afc20, 0xc000109380}, 0x0)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Container/Container.go:306 +0x72b
+php-in-go/Include/Container.(*Container).Resolve(0xc000109230, {0x12afc20, 0xc000109380}, 0x0, 0x1)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Container/Container.go:118 +0x1d4
+php-in-go/Include/Container.(*Container).Resolve(0xc000109230, {0x12cbb00, 0xc000108cf0}, 0x0, 0x1)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Container/Container.go:141 +0x453
+php-in-go/Include/Foundation/Http.(*Kernel).dispatch(0xc000066140, 0xc000066220, 0xc000072400, 0xc000072400, {0x1353cc0, 0xc000109230})
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Kernel.go:100 +0x68
+php-in-go/Include/Foundation/Http.(*Kernel).Handle(0xc00000e168, 0xc000109110, 0xc000072400)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Include/Foundation/Http/Kernel.go:71 +0x105
+php-in-go/Bootstrap.(*App).Handle(0xc000164000, 0xc000108cc0, 0x134a2e0)
+	/Users/yehua/Desktop/program/开源/PhpInGo/Bootstrap/App.go:59
+2022-04-22 16:39:28 [200] GET /
+ 
+ 
+2022-04-22 16:39:41 [200] GET /
+ 
+ 
+2022-04-22 16:39:44 [200] GET /
+ 
+ 
+2022-04-22 16:39:46 [200] GET /
+ 
+ 
+2022-04-22 16:39:49 [200] GET /
+ 
+ 
+2022-04-22 16:39:51 [200] GET /
+ 
+ 
+2022-04-22 16:39:52 [200] GET /
+ 
+ 
+2022-04-22 17:59:44 [200] GET /
+ 
+ 
+2022-04-22 17:59:47 [200] GET /
+ 
+ 
+2022-04-22 17:59:47 [404] GET /favicon.ico
+ 
+ 
+2022-04-22 18:01:25 [200] GET /
+ 
+ 
+2022-04-22 18:01:29 [200] GET /
+ 
+ 
+2022-04-22 18:01:30 [200] GET /
+ 
+ 
+2022-04-22 18:01:30 [200] GET /
+ 
+ 
+2022-04-22 18:01:31 [200] GET /
+ 
+ 
+2022-04-22 18:01:32 [200] GET /
+ 
+ 
+2022-04-22 18:01:32 [200] GET /
+ 
+ 
+2022-04-22 18:01:34 [200] GET /
+ 
+ 
+2022-04-22 18:01:34 [200] GET /
+ 
+ 
+2022-04-22 18:01:36 [200] GET /
+ 
+ 
+2022-04-22 18:01:36 [200] GET /
+ 
+ 
+2022-04-22 18:02:59 [200] GET /
+ 
+ 
+2022-04-22 18:03:01 [200] GET /
+ 
+ 
+2022-04-22 18:03:03 [200] GET /
+ 
+ 
+2022-04-22 18:03:04 [200] GET /
+ 
+ 
+2022-04-22 18:03:05 [200] GET /
+ 
+ 
+2022-04-22 18:03:06 [200] GET /
+ 
+ 
+2022-04-22 18:03:06 [200] GET /
+ 
+ 
