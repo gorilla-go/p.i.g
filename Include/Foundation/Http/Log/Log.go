@@ -9,6 +9,7 @@ import (
 )
 
 type Log struct {
+	LogPath string
 }
 
 func (l *Log) StartLogManager() {
@@ -21,12 +22,11 @@ func (l *Log) CloseLogManager() {
 
 func (l *Log) Log(request *Http.Request, response *Http.Response) {
 	filePrefix := time.Now().Format("0601")
-	path := request.AppConfig["logPath"].(string)
 	rootFile, err := os.Getwd()
 	if err != nil {
 		panic(err)
 	}
-	file := fmt.Sprintf("%s/%s%s/", rootFile, path, filePrefix)
+	file := fmt.Sprintf("%s/%s%s/", rootFile, l.LogPath, filePrefix)
 
 	if FileSystem2.IsFile(file) == false {
 		FileSystem2.Mkdir(file)

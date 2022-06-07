@@ -294,7 +294,7 @@ func (c *Container) build(object interface{}, params map[string]interface{}) int
 		}
 
 		// set attribute
-		if tag, ok := fieldStruct.Tag.Lookup("default"); ok {
+		if tag, ok := fieldStruct.Tag.Lookup("def"); ok {
 			refDefaultValue := reflect.ValueOf(tag)
 			if refDefaultValue.CanConvert(fieldStruct.Type) {
 				fieldValue.Set(refDefaultValue.Convert(fieldStruct.Type))

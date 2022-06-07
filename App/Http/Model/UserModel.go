@@ -1,5 +1,5 @@
 package Model
 
 type UserModel struct {
-	Table string `default:"123"`
+	Table string `def:"123"`
 }

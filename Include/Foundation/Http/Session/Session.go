@@ -10,11 +10,13 @@ import (
 )
 
 type Session struct {
-	cache Cache.ICache
+	cache  Cache.ICache
+	config Config
 }
 
-func (s *Session) StartSessionManager(cache Cache.ICache) {
+func (s *Session) StartSessionManager(cache Cache.ICache, config Config) {
 	s.cache = cache
+	s.config = config
 }
 
 func (s *Session) CloseSessionManager() {
@@ -31,7 +33,7 @@ func (s *Session) SetSession(key string, v interface{}, request *Http.Request, r
 	s.cache.SetCache(
 		key,
 		v,
-		request.AppConfig["sessionExpire"].(int),
+		s.config.Expire,
 		fmt.Sprintf("session/%s/", s.getClientKey(request, response)),
 	)
 }
@@ -41,10 +43,10 @@ func (s *Session) Clear(request *Http.Request, response *Http.Response) {
 }
 
 func (s *Session) getClientKey(request *Http.Request, response *Http.Response) string {
-	clientKey := request.AppConfig["sessionKey"].(string)
+	clientKey := s.config.Name
 	cookie, err := request.Cookie(clientKey)
 	cv := ""
-	expire := request.AppConfig["sessionExpire"].(int)
+	expire := s.config.Expire
 	if err == http.ErrNoCookie {
 		uuid := Util.Uuid()
 		response.AddCookie(&http.Cookie{

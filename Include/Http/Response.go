@@ -11,16 +11,14 @@ import (
 )
 
 type Response struct {
-	AppConfig      map[string]interface{}
 	Code           int
 	responseWriter http.ResponseWriter
 	ErrorStack     string
 	ErrorMessage   string
 }
 
-func BuildResponse(responseWriter http.ResponseWriter, appConfig map[string]interface{}) *Response {
+func BuildResponse(responseWriter http.ResponseWriter) *Response {
 	return &Response{
-		AppConfig:      appConfig,
 		responseWriter: responseWriter,
 		Code:           200,
 	}
