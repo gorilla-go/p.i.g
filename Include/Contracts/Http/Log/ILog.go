@@ -1,9 +1,12 @@
 package Log
 
-import Http2 "php-in-go/Include/Http"
+import (
+	"php-in-go/Include/Http/Request"
+	Http2 "php-in-go/Include/Http/Response"
+)
 
 type ILog interface {
 	StartLogManager()
-	Log(request *Http2.Request, response *Http2.Response)
+	Log(request *Request.Request, response *Http2.Response)
 	CloseLogManager()
 }

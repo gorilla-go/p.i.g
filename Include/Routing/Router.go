@@ -3,8 +3,9 @@ package Routing
 import (
 	"errors"
 	"net/url"
+	"php-in-go/Include/Config"
 	"php-in-go/Include/Container"
-	"php-in-go/Include/Http"
+	"php-in-go/Include/Http/Request"
 	"php-in-go/Include/Routing/Component"
 	"sort"
 	"strings"
@@ -12,16 +13,16 @@ import (
 
 type Router struct {
 	routeMaps   []*Component.RouteMap
-	routeConfig map[string]interface{}
+	routeConfig Config.Loader
 }
 
-func (r *Router) Initializer(routeMaps []*Component.RouteMap, routeConfig map[string]interface{}) {
+func (r *Router) Initializer(routeMaps []*Component.RouteMap, routeConfig Config.Loader) {
 	// set route maps.
 	r.routeMaps = routeMaps
 	r.routeConfig = routeConfig
 }
 
-func (r *Router) Resolve(request *Http.Request) *Target {
+func (r *Router) Resolve(request *Request.Request) *Target {
 	requestUri := request.RequestURI
 
 	// remove query

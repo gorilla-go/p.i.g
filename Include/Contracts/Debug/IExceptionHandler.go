@@ -2,9 +2,9 @@ package Debug
 
 import (
 	"php-in-go/Include/Contracts/Exception"
-	"php-in-go/Include/Http"
+	"php-in-go/Include/Http/Response"
 )
 
 type IExceptionHandler interface {
-	Handle(exception Exception.IException, response *Http.Response)
+	Handle(exception Exception.IException, response *Response.Response)
 }

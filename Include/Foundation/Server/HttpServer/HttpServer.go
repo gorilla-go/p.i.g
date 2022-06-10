@@ -1,10 +1,12 @@
-package Server
+package HttpServer
 
 import (
 	"fmt"
 	"net/http"
+	"php-in-go/Config"
 	"php-in-go/Include/Contracts/Http/App"
-	Http2 "php-in-go/Include/Http"
+	"php-in-go/Include/Http/Request"
+	Http2 "php-in-go/Include/Http/Response"
 )
 
 type HttpServer struct {
@@ -20,12 +22,16 @@ func (s *HttpServer) Start() {
 	http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
 		// start to dispatch.
 		s.App.Handle(
-			Http2.BuildRequest(request),
+			Request.BuildRequest(request),
 			Http2.BuildResponse(writer),
 		)
 	})
 
 	// error?
-	globalConfig := s.App.GetConfigs()
-	panic(http.ListenAndServe(fmt.Sprintf(":%d", globalConfig["app"]["port"].(int)), nil))
+	panic(
+		http.ListenAndServe(
+			fmt.Sprintf(":%d", Config.Loader()["app.port"].(int)),
+			nil,
+		),
+	)
 }

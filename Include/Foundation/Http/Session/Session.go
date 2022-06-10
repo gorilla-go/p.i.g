@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"php-in-go/Include/Contracts/Cache"
-	"php-in-go/Include/Http"
+	"php-in-go/Include/Http/Request"
+	"php-in-go/Include/Http/Response"
 	"php-in-go/Include/Util"
 	"time"
 )
@@ -22,27 +23,27 @@ func (s *Session) StartSessionManager(cache Cache.ICache, config Config) {
 func (s *Session) CloseSessionManager() {
 }
 
-func (s *Session) GetSession(str string, request *Http.Request, response *Http.Response) interface{} {
+func (s *Session) GetSession(str string, request *Request.Request, response *Response.Response) interface{} {
 	return s.cache.GetCache(
 		str,
-		fmt.Sprintf("session/%s/", s.getClientKey(request, response)),
+		fmt.Sprintf("session/%s/", s.SessionStart(request, response)),
 	).Value
 }
 
-func (s *Session) SetSession(key string, v interface{}, request *Http.Request, response *Http.Response) {
+func (s *Session) SetSession(key string, v interface{}, request *Request.Request, response *Response.Response) {
 	s.cache.SetCache(
 		key,
 		v,
 		s.config.Expire,
-		fmt.Sprintf("session/%s/", s.getClientKey(request, response)),
+		fmt.Sprintf("session/%s/", s.SessionStart(request, response)),
 	)
 }
 
-func (s *Session) Clear(request *Http.Request, response *Http.Response) {
-	s.cache.ClearPath(fmt.Sprintf("session/%s/", s.getClientKey(request, response)))
+func (s *Session) Clear(request *Request.Request, response *Response.Response) {
+	s.cache.ClearPath(fmt.Sprintf("session/%s/", s.SessionStart(request, response)))
 }
 
-func (s *Session) getClientKey(request *Http.Request, response *Http.Response) string {
+func (s *Session) SessionStart(request *Request.Request, response *Response.Response) string {
 	clientKey := s.config.Name
 	cookie, err := request.Cookie(clientKey)
 	cv := ""

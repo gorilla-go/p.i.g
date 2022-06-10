@@ -3,16 +3,17 @@ package Controller
 import (
 	"net/http"
 	"os"
+	"php-in-go/Include/Config"
 	"php-in-go/Include/Contracts/Container"
-	Http2 "php-in-go/Include/Contracts/Http/App"
-	"php-in-go/Include/Http"
+	"php-in-go/Include/Contracts/Http/Session"
+	"php-in-go/Include/Http/Request"
+	"php-in-go/Include/Http/Response"
 )
 
 type BaseController struct {
-	App       Http2.IApp
 	Container Container.IContainer
-	Request   *Http.Request
-	Response  *Http.Response
+	Request   *Request.Request
+	Response  *Response.Response
 }
 
 //NoFound no found action.
@@ -40,14 +41,13 @@ func (c *BaseController) ResolveNew(abstract interface{}) interface{} {
 }
 
 func (c *BaseController) SetSession(k string, v string) {
-	c.App.GetSession().SetSession(k, v, c.Request, c.Response)
+	c.Container.GetSingleton("session").(Session.ISession).SetSession(k, v, c.Request, c.Response)
 }
 
 func (c *BaseController) GetSession(k string) interface{} {
-	return c.App.GetSession().GetSession(k, c.Request, c.Response)
+	return c.Container.GetSingleton("session").(Session.ISession).GetSession(k, c.Request, c.Response)
 }
 
 func (c *BaseController) GetConfig(s string) interface{} {
-	configs := c.App.GetConfigs()
-	return configs[s]
+	return c.Container.GetSingleton("config").(Config.Loader).Load(s)
 }

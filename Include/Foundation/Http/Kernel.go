@@ -3,68 +3,109 @@ package Http
 import (
 	"fmt"
 	Http3 "php-in-go/App/Http"
+	"php-in-go/Include/Config"
 	Container2 "php-in-go/Include/Container"
 	"php-in-go/Include/Contracts/Cache"
 	"php-in-go/Include/Contracts/Container"
-	Http2 "php-in-go/Include/Contracts/Http/App"
+	"php-in-go/Include/Contracts/Debug"
 	"php-in-go/Include/Contracts/Http/Controller"
+	"php-in-go/Include/Contracts/Http/Log"
 	"php-in-go/Include/Contracts/Http/Session"
+	"php-in-go/Include/Contracts/Routing"
 	"php-in-go/Include/Foundation/Exceptions"
 	Controller2 "php-in-go/Include/Foundation/Http/Controller"
 	HttpPipeline "php-in-go/Include/Foundation/Http/Pipeline"
-	"php-in-go/Include/Http"
+	Session2 "php-in-go/Include/Foundation/Http/Session"
+	"php-in-go/Include/Http/Request"
+	"php-in-go/Include/Http/Response"
+	"php-in-go/Routes"
 	"reflect"
 	"runtime"
-	"time"
 )
 
 type Kernel struct {
-	app              Http2.IApp
-	requestContainer *Container2.Container
+	router               Routing.IRouter
+	httpExceptionHandler Debug.IExceptionHandler
+	session              Session.ISession
+	cache                Cache.ICache
+	log                  Log.ILog
+	config               Config.Loader
 }
 
-func (k *Kernel) Bootstrap(app Http2.IApp) {
-	k.app = app
+func (k *Kernel) Bootstrap(
+	router Routing.IRouter,
+	httpExceptionHandler Debug.IExceptionHandler,
+	session Session.ISession,
+	cache Cache.ICache,
+	log Log.ILog,
+	config Config.Loader,
+) {
+	k.config = config
+
+	// set route.
+	k.router = router
+	k.router.Initializer(Routes.Route(), config.LoadPath("route"))
+
+	// set cache.
+	k.cache = cache
+	k.cache.StartCacheManager()
+
+	// set http base exception handler.
+	k.httpExceptionHandler = httpExceptionHandler
+
+	// init session
+	k.session = session
+	k.session.StartSessionManager(k.cache, Session2.Config{
+		Expire: k.config["app.sessionExpire"].(int),
+		Name:   k.config["app.sessionKey"].(string),
+	})
+
+	// set log server.
+	k.log = log
+	log.StartLogManager()
 }
 
 // Handle each request kernel.
-func (k *Kernel) Handle(request *Http.Request, response *Http.Response) {
+func (k *Kernel) Handle(request *Request.Request, response *Response.Response) {
 	// register error handle.
-	defer k.exception(request, response)
+	defer func() {
+		// handler exception
+		k.exception(request, response)
+
+		// set log.
+		go k.doLog(request, response)
+	}()
+
+	// start session
+	k.session.SessionStart(request, response)
 
 	// fetch middleware
-	var middlewareArr []func(*Http.Request, *Http.Response, func(*Http.Request, *Http.Response))
+	var middlewareArr []func(*Request.Request, *Response.Response, func(*Request.Request, *Response.Response))
 	for _, item := range Http3.Middlewares() {
 		middlewareArr = append(middlewareArr, item.Handle)
 	}
 
 	// start pipe.
 	HttpPipeline.NewHttpPipeline().Send(request, response).Through(middlewareArr...).Then(
-		func(request *Http.Request, response *Http.Response) {
+		func(request *Request.Request, response *Response.Response) {
 			k.dispatch(request, response)
 		},
 	)
 }
 
-func (k *Kernel) shellDump(request *Http.Request, response *Http.Response) {
-	fmt.Printf(
-		"%s [%d] %s %s %dms  %s\n",
-		time.Now().Format("2006-01-02 15:04:05"),
-		response.Code,
-		request.Method,
-		request.RequestURI,
-		time.Now().Sub(request.StartTime).Microseconds(),
-		response.ErrorMessage,
-	)
+func (k *Kernel) Close() {
+	k.session.CloseSessionManager()
+	k.cache.CloseCacheManager()
+	k.log.CloseLogManager()
 }
 
-func (k *Kernel) exception(request *Http.Request, response *Http.Response) {
+func (k *Kernel) exception(request *Request.Request, response *Response.Response) {
 	// catch exception.
 	err := recover()
 	if err != nil {
 		v := make([]byte, 1024*2)
 		runtime.Stack(v, true)
-		k.app.GetExceptionHandler().Handle(
+		k.httpExceptionHandler.Handle(
 			Exceptions.NewException(
 				1,
 				fmt.Sprintf("%v\n\n%v", err, string(v)),
@@ -76,21 +117,19 @@ func (k *Kernel) exception(request *Http.Request, response *Http.Response) {
 		response.ErrorStack = string(v)
 		response.ErrorMessage = fmt.Sprintf("%v", err)
 	}
+}
 
-	// dump into debug
-	k.shellDump(request, response)
-
-	// logger.
-	k.app.GetLogger().Log(request, response)
+func (k *Kernel) doLog(request *Request.Request, response *Response.Response) {
+	k.log.Log(request, response)
 }
 
 // dispatch call correct controller method.
-func (k *Kernel) dispatch(request *Http.Request, response *Http.Response) {
+func (k *Kernel) dispatch(request *Request.Request, response *Response.Response) {
 	// resolve container foundation
-	container := k.containerFoundation(request, response)
+	container := k.requestContainer(request, response)
 
 	// route resolve.
-	target := k.app.GetRouter().Resolve(request)
+	target := k.router.Resolve(request)
 
 	// page no found
 	if target == nil {
@@ -112,47 +151,39 @@ func (k *Kernel) dispatch(request *Http.Request, response *Http.Response) {
 	}
 
 	// call method.
-	container.Resolve(targetMethod.Interface(), nil, true)
+	method := targetMethod.Interface()
+	container.Resolve(method, nil, true)
 }
 
-func (k *Kernel) containerFoundation(request *Http.Request, response *Http.Response) Container.IContainer {
-	// init request container
-	requestContainer := Container2.NewContainer()
+func (k *Kernel) requestContainer(
+	request *Request.Request,
+	response *Response.Response,
+) Container.IContainer {
+	// init basic container
+	basicContainer := Container2.NewContainer()
 
-	// app.
-	requestContainer.AddBinding(
-		(*Http2.IApp)(nil),
-		Container2.NewBindingImpl(k.app).SetShared().SetAlias("app"),
-	)
-
-	// session.
-	requestContainer.AddBinding(
-		(*Session.ISession)(nil),
-		Container2.NewBindingImpl(k.app.GetSession()).SetShared().SetAlias("session"),
-	)
-
-	// session.
-	requestContainer.AddBinding(
-		(*Cache.ICache)(nil),
-		Container2.NewBindingImpl(k.app.GetCache()).SetShared().SetAlias("cache"),
-	)
+	// set base.
+	basicContainer.Singleton(k.session, "session")
+	basicContainer.Singleton(k.config, "config")
+	basicContainer.Singleton(k.cache, "cache")
 
 	// request container.
-	requestContainer.AddBinding(
+	basicContainer.AddBinding(
 		(*Container.IContainer)(nil),
-		Container2.NewBindingImpl(requestContainer).SetShared().SetAlias("container"),
+		Container2.NewBindingImpl(basicContainer).SetShared().SetAlias("container"),
 	)
 
 	// binding request.
-	requestContainer.Singleton(request, "request")
+	basicContainer.Singleton(request, "request")
 
 	// binding response
-	requestContainer.Singleton(response, "response")
+	basicContainer.Singleton(response, "response")
 
-	return requestContainer
+	// return container.
+	return basicContainer
 }
 
-func (k *Kernel) pageNoFoundHandle(request *Http.Request, response *Http.Response) {
+func (k *Kernel) pageNoFoundHandle(request *Request.Request, response *Response.Response) {
 	baseController := &Controller2.BaseController{
 		Request:  request,
 		Response: response,

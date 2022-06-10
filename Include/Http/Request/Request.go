@@ -1,9 +1,9 @@
-package Http
+package Request
 
 import (
 	"net/http"
 	"net/url"
-	"php-in-go/Config/route"
+	Config2 "php-in-go/Config"
 	"strings"
 	"time"
 )
@@ -16,7 +16,7 @@ type Request struct {
 }
 
 func BuildRequest(request *http.Request) *Request {
-	routeSettings := route.RouteConfig()
+	routeSettings := Config2.Loader().LoadPath("route")
 	return &Request{
 		StartTime: time.Now(),
 		Params:    nil,

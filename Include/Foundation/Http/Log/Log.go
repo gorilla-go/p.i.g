@@ -3,7 +3,8 @@ package Log
 import (
 	"fmt"
 	"os"
-	"php-in-go/Include/Http"
+	"php-in-go/Include/Http/Request"
+	"php-in-go/Include/Http/Response"
 	FileSystem2 "php-in-go/Include/Util/FileSystem"
 	"time"
 )
@@ -20,7 +21,7 @@ func (l *Log) CloseLogManager() {
 
 }
 
-func (l *Log) Log(request *Http.Request, response *Http.Response) {
+func (l *Log) Log(request *Request.Request, response *Response.Response) {
 	filePrefix := time.Now().Format("0601")
 	rootFile, err := os.Getwd()
 	if err != nil {

@@ -2,7 +2,6 @@ package Controller
 
 import (
 	"php-in-go/Include/Foundation/Http/Controller"
-	"php-in-go/Include/Http"
 )
 
 type Index struct {
@@ -10,9 +9,9 @@ type Index struct {
 }
 
 func (t *Index) Index() {
-	t.Response.Echo(t.Request.RequestURI)
+	t.SetSession("app", "ok")
 }
 
-func (t *Index) Name(response *Http.Response) {
-
+func (t *Index) Name() {
+	t.GetSession("app")
 }

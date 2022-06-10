@@ -1,13 +1,14 @@
 package Middleware
 
 import (
-	"php-in-go/Include/Http"
+	"php-in-go/Include/Http/Request"
+	"php-in-go/Include/Http/Response"
 )
 
 type IMiddleware interface {
 	Handle(
-		*Http.Request,
-		*Http.Response,
-		func(request2 *Http.Request, response2 *Http.Response),
+		*Request.Request,
+		*Response.Response,
+		func(request2 *Request.Request, response2 *Response.Response),
 	)
 }
